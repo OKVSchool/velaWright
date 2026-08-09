@@ -11,6 +11,7 @@ export default function DeploymentList() {
   const router = useRouter()
   const [endeavors, setEndeavors] = useState([])
   const [error, setError] = useState('')
+  const [dataLoading, setDataLoading] = useState(true)
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -18,13 +19,15 @@ export default function DeploymentList() {
 
   useEffect(() => {
     if (!user) return
+    setDataLoading(true)
     api.getEndeavors()
       .then(all => setEndeavors(all.filter(e => e.status === 'deployed')))
       .catch(err => setError(err.message))
+      .finally(() => setDataLoading(false))
   }, [user])
 
-  if (loading) return <p>Loading...</p>
-  if (!user) return null
+  if (loading || !user) return <p>Loading...</p>
+  if (dataLoading) return <p>Loading...</p>
 
   return (
     <div>

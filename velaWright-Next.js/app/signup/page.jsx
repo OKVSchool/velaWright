@@ -61,7 +61,7 @@ export default function Signup() {
           value={form.password}
           onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
           required
-          minLength={6}
+          minLength={8}
           style={inputStyle}
         />
         <button type="submit" disabled={submitting} style={btnStyle}>

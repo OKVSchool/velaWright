@@ -9,9 +9,12 @@ export default function MarkList({ parentId, parentType }) {
   const [newTitle, setNewTitle] = useState('')
   const [adding, setAdding] = useState(false)
   const [confirmId, setConfirmId] = useState(null)
+  const [markError, setMarkError] = useState('')
 
   useEffect(() => {
-    api.getMarks({ [parentType]: parentId }).then(setMarks)
+    api.getMarks({ [parentType]: parentId })
+      .then(setMarks)
+      .catch(err => setMarkError(err.message))
   }, [parentId, parentType])
 
   async function addMark(e) {
@@ -22,12 +25,19 @@ export default function MarkList({ parentId, parentType }) {
       setMarks(prev => [mark, ...prev])
       setNewTitle('')
       setAdding(false)
-    } catch { /* ignore */ }
+      setMarkError('')
+    } catch (err) {
+      setMarkError(err.message)
+    }
   }
 
   async function toggleDone(mark) {
-    const updated = await api.updateMark(mark._id, { done: !mark.done })
-    setMarks(prev => prev.map(m => m._id === updated._id ? updated : m))
+    try {
+      const updated = await api.updateMark(mark._id, { done: !mark.done })
+      setMarks(prev => prev.map(m => m._id === updated._id ? updated : m))
+    } catch (err) {
+      setMarkError(err.message)
+    }
   }
 
   async function deleteMark() {
@@ -58,12 +68,16 @@ export default function MarkList({ parentId, parentType }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Marks</h2>
         <button
-          onClick={() => setAdding(a => !a)}
+          onClick={() => { setAdding(a => !a); setMarkError('') }}
           style={{ background: 'none', border: '1px solid #444', color: '#e5e5e5', padding: '0.25rem 0.6rem', borderRadius: 4, fontSize: '0.875rem' }}
         >
           + Add mark
         </button>
       </div>
+
+      {markError && (
+        <p style={{ color: '#f87171', fontSize: '0.75rem', marginBottom: '0.75rem' }}>{markError}</p>
+      )}
 
       {adding && (
         <form onSubmit={addMark} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>

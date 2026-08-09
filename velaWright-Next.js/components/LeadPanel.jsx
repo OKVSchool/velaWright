@@ -13,6 +13,8 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
   const [highlighted, setHighlighted] = useState(false)
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [traceError, setTraceError] = useState('')
   const ref = useRef(null)
 
   useEffect(() => {
@@ -30,15 +32,27 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
   const [addingTrace, setAddingTrace] = useState(false)
 
   async function saveTitle() {
-    await api.updateLead(lead._id, { title })
-    setEditing(false)
-    onUpdate()
+    try {
+      await api.updateLead(lead._id, { title })
+      setEditing(false)
+      setSaveError('')
+      onUpdate()
+    } catch (err) {
+      setTitle(lead.title)
+      setSaveError(err.message)
+    }
   }
 
   async function savePriority(val) {
+    const prev = priority
     setPriority(val)
-    await api.updateLead(lead._id, { priority: val })
-    onUpdate()
+    try {
+      await api.updateLead(lead._id, { priority: val })
+      onUpdate()
+    } catch (err) {
+      setPriority(prev)
+      setSaveError(err.message)
+    }
   }
 
   async function deleteLead() {
@@ -61,10 +75,15 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
   async function addTrace(e) {
     e.preventDefault()
     if (!newTrace.trim()) return
-    await api.createTrace({ title: newTrace, ideaId: lead._id })
-    setNewTrace('')
-    setAddingTrace(false)
-    onUpdateTraces()
+    try {
+      await api.createTrace({ title: newTrace, ideaId: lead._id })
+      setNewTrace('')
+      setAddingTrace(false)
+      setTraceError('')
+      onUpdateTraces()
+    } catch (err) {
+      setTraceError(err.message)
+    }
   }
 
   const priorityColors = { none: '#555', low: '#22c55e', medium: '#f59e0b', high: '#ef4444' }
@@ -96,7 +115,7 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
             style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4 }}
           />
         ) : (
-          <span style={{ flex: 1, fontWeight: 500 }}>{lead.title}</span>
+          <span style={{ flex: 1, fontWeight: 500 }}>{title}</span>
         )}
         <select
           value={priority}
@@ -119,10 +138,14 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
           <option value="medium">medium</option>
           <option value="high">high</option>
         </select>
-        <button onClick={e => { e.stopPropagation(); setEditing(true) }} aria-label="Edit lead" style={iconBtn}>✏️</button>
+        <button onClick={e => { e.stopPropagation(); setEditing(true); setSaveError('') }} aria-label="Edit lead" style={iconBtn}>✏️</button>
         <button onClick={e => { e.stopPropagation(); setConfirming(true) }} aria-label="Delete lead" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
         <button onClick={e => { e.stopPropagation(); promoteToEndeavor() }} aria-label="Promote to Endeavor" style={{ ...iconBtn, fontSize: '0.7rem', color: '#e07820', fontWeight: 600 }}>↑ Endeavor</button>
       </div>
+
+      {saveError && (
+        <p style={{ color: '#f87171', fontSize: '0.72rem', margin: 0, padding: '0 1rem 0.5rem' }}>{saveError}</p>
+      )}
 
       {open && (
         <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid #2a2a2a' }}>
@@ -131,11 +154,14 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
           </div>
 
           {addingTrace ? (
-            <form onSubmit={addTrace} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-              <input autoFocus value={newTrace} onChange={e => setNewTrace(e.target.value)} placeholder="New trace…" style={{ flex: 1, ...miniInput }} />
-              <button type="submit" style={miniBtn}>Add</button>
-              <button type="button" onClick={() => setAddingTrace(false)} style={{ ...miniBtn, background: '#2a2a2a' }}>✕</button>
-            </form>
+            <>
+              <form onSubmit={addTrace} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                <input autoFocus value={newTrace} onChange={e => setNewTrace(e.target.value)} placeholder="New trace…" style={{ flex: 1, ...miniInput }} />
+                <button type="submit" style={miniBtn}>Add</button>
+                <button type="button" onClick={() => { setAddingTrace(false); setTraceError('') }} style={{ ...miniBtn, background: '#2a2a2a' }}>✕</button>
+              </form>
+              {traceError && <p style={{ color: '#f87171', fontSize: '0.72rem', margin: '0.25rem 0 0' }}>{traceError}</p>}
+            </>
           ) : (
             <button onClick={() => setAddingTrace(true)} style={{ ...miniBtn, marginTop: '0.75rem' }}>+ Trace</button>
           )}

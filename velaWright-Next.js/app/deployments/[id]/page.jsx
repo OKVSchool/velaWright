@@ -101,7 +101,17 @@ export default function EditDeploymentForm() {
     }
   }
 
-  if (loading || !form) return <p>Loading…</p>
+  if (loading) return <p>Loading…</p>
+  if (!user) return null
+  if (!form && !error) return <p>Loading…</p>
+  if (!form) return (
+    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', color: '#e07820', marginBottom: '1.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+        ← Back
+      </button>
+      <p style={{ color: '#f87171' }}>{error}</p>
+    </div>
+  )
 
   const field = (key) => ({
     ...inputStyle,

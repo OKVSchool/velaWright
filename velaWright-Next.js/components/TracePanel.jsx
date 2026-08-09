@@ -11,6 +11,7 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
   const [highlighted, setHighlighted] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [title, setTitle] = useState(trace.title)
+  const [saveError, setSaveError] = useState('')
   const ref = useRef(null)
 
   useEffect(() => {
@@ -22,8 +23,15 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
   }, [isActive])
 
   async function saveTitle() {
-    await api.updateTrace(trace._id, { title })
-    setEditing(false)
+    try {
+      await api.updateTrace(trace._id, { title })
+      setEditing(false)
+      setSaveError('')
+      onDelete()
+    } catch (err) {
+      setTitle(trace.title)
+      setSaveError(err.message)
+    }
   }
 
   async function deleteTrace() {
@@ -44,44 +52,47 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
   }
 
   return (
-    <div ref={ref} style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-      background: nested ? '#0f0f0f' : '#1a1a1a',
-      border: `1px solid ${highlighted ? '#e07820' : nested ? '#222' : '#2a2a2a'}`,
-      borderRadius: 6,
-      padding: '0.6rem 0.9rem',
-      transition: 'border-color 0.4s'
-    }}>
-      {confirming && (
-        <ConfirmModal
-          message={`Select ${trace.title}'s fate.`}
-          onDelete={deleteTrace}
-          onStash={stashTrace}
-          onCancel={() => setConfirming(false)}
-        />
-      )}
+    <>
+      <div ref={ref} style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        background: nested ? '#0f0f0f' : '#1a1a1a',
+        border: `1px solid ${highlighted ? '#e07820' : nested ? '#222' : '#2a2a2a'}`,
+        borderRadius: 6,
+        padding: '0.6rem 0.9rem',
+        transition: 'border-color 0.4s'
+      }}>
+        {confirming && (
+          <ConfirmModal
+            message={`Select ${trace.title}'s fate.`}
+            onDelete={deleteTrace}
+            onStash={stashTrace}
+            onCancel={() => setConfirming(false)}
+          />
+        )}
 
-      <span style={{ color: '#555', fontSize: '0.75rem' }}>💭</span>
+        <span style={{ color: '#555', fontSize: '0.75rem' }}>💭</span>
 
-      {editing ? (
-        <input
-          autoFocus
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          onBlur={saveTitle}
-          onKeyDown={e => e.key === 'Enter' && saveTitle()}
-          style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.25rem 0.5rem', borderRadius: 4, fontSize: '0.875rem' }}
-        />
-      ) : (
-        <span style={{ flex: 1, fontSize: '0.9rem', color: '#ddd' }}>{trace.title}</span>
-      )}
+        {editing ? (
+          <input
+            autoFocus
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            onBlur={saveTitle}
+            onKeyDown={e => e.key === 'Enter' && saveTitle()}
+            style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.25rem 0.5rem', borderRadius: 4, fontSize: '0.875rem' }}
+          />
+        ) : (
+          <span style={{ flex: 1, fontSize: '0.9rem', color: '#ddd' }}>{title}</span>
+        )}
 
-      <button onClick={() => setEditing(true)} aria-label="Edit trace" style={iconBtn}>✏️</button>
-      <button onClick={() => setConfirming(true)} aria-label="Delete trace" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
-      <button onClick={promoteToLead} aria-label="Promote to Lead" style={{ ...iconBtn, fontSize: '0.7rem', color: '#e07820', fontWeight: 600 }}>↑ Lead</button>
-    </div>
+        <button onClick={() => { setEditing(true); setSaveError('') }} aria-label="Edit trace" style={iconBtn}>✏️</button>
+        <button onClick={() => setConfirming(true)} aria-label="Delete trace" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
+        <button onClick={promoteToLead} aria-label="Promote to Lead" style={{ ...iconBtn, fontSize: '0.7rem', color: '#e07820', fontWeight: 600 }}>↑ Lead</button>
+      </div>
+      {saveError && <p style={{ color: '#f87171', fontSize: '0.72rem', margin: '-0.25rem 0 0', paddingLeft: '0.9rem' }}>{saveError}</p>}
+    </>
   )
 }
 

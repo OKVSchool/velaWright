@@ -17,6 +17,8 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   const [title, setTitle] = useState(endeavor.title)
   const [addingTrace, setAddingTrace] = useState(false)
   const [newTrace, setNewTrace] = useState('')
+  const [saveError, setSaveError] = useState('')
+  const [traceError, setTraceError] = useState('')
   const [details, setDetails] = useState({
     description: endeavor.description || '',
     framework: endeavor.framework || '',
@@ -36,21 +38,32 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   }, [isActive])
 
   async function saveTitle() {
-    await api.updateEndeavor(endeavor._id, { title })
-    setEditingTitle(false)
-    onUpdate?.()
+    try {
+      await api.updateEndeavor(endeavor._id, { title })
+      setEditingTitle(false)
+      setSaveError('')
+      onUpdate?.()
+    } catch (err) {
+      setTitle(endeavor.title)
+      setSaveError(err.message)
+    }
   }
 
   async function saveDetails() {
-    await api.updateEndeavor(endeavor._id, {
-      description: details.description,
-      framework: details.framework,
-      repoUrl: details.repoUrl,
-      status: details.status,
-      tags: details.tags.split(',').map(t => t.trim()).filter(Boolean),
-    })
-    setEditingDetails(false)
-    onUpdate?.()
+    try {
+      await api.updateEndeavor(endeavor._id, {
+        description: details.description,
+        framework: details.framework,
+        repoUrl: details.repoUrl,
+        status: details.status,
+        tags: details.tags.split(',').map(t => t.trim()).filter(Boolean),
+      })
+      setEditingDetails(false)
+      setSaveError('')
+      onUpdate?.()
+    } catch (err) {
+      setSaveError(err.message)
+    }
   }
 
   async function deleteEndeavor() {
@@ -81,10 +94,15 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   async function addTrace(e) {
     e.preventDefault()
     if (!newTrace.trim()) return
-    await api.createTrace({ title: newTrace, projectId: endeavor._id })
-    setNewTrace('')
-    setAddingTrace(false)
-    onUpdateTraces?.()
+    try {
+      await api.createTrace({ title: newTrace, projectId: endeavor._id })
+      setNewTrace('')
+      setAddingTrace(false)
+      setTraceError('')
+      onUpdateTraces?.()
+    } catch (err) {
+      setTraceError(err.message)
+    }
   }
 
   const statusColors = { active: '#22c55e', paused: '#f59e0b', completed: '#3b82f6', deployed: '#a78bfa' }
@@ -118,7 +136,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
             style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4 }}
           />
         ) : (
-          <span style={{ flex: 1, fontWeight: 500 }}>{endeavor.title}</span>
+          <span style={{ flex: 1, fontWeight: 500 }}>{title}</span>
         )}
 
         {endeavor.status && (
@@ -132,10 +150,14 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
           </span>
         )}
 
-        <button onClick={e => { e.stopPropagation(); setEditingTitle(true) }} aria-label="Edit title" style={iconBtn}>✏️</button>
+        <button onClick={e => { e.stopPropagation(); setEditingTitle(true); setSaveError('') }} aria-label="Edit title" style={iconBtn}>✏️</button>
         <button onClick={e => { e.stopPropagation(); setConfirming(true) }} aria-label="Delete endeavor" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
         <button onClick={e => { e.stopPropagation(); promoteToDeployment() }} aria-label="Promote to Deployment" style={{ ...iconBtn, fontSize: '0.7rem', color: '#e07820', fontWeight: 600 }}>↑ Deploy</button>
       </div>
+
+      {saveError && (
+        <p style={{ color: '#f87171', fontSize: '0.72rem', margin: 0, padding: '0 1rem 0.5rem' }}>{saveError}</p>
+      )}
 
       {/* Expanded body */}
       {open && (
@@ -161,7 +183,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
               </select>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button onClick={saveDetails} style={miniBtn}>Save</button>
-                <button onClick={() => setEditingDetails(false)} style={{ ...miniBtn, background: '#2a2a2a' }}>Cancel</button>
+                <button onClick={() => { setEditingDetails(false); setSaveError('') }} style={{ ...miniBtn, background: '#2a2a2a' }}>Cancel</button>
               </div>
             </div>
           ) : (
@@ -200,11 +222,14 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
           </div>
 
           {addingTrace ? (
-            <form onSubmit={addTrace} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-              <input autoFocus value={newTrace} onChange={e => setNewTrace(e.target.value)} placeholder="New trace…" style={{ flex: 1, ...fieldInput }} />
-              <button type="submit" style={miniBtn}>Add</button>
-              <button type="button" onClick={() => setAddingTrace(false)} style={{ ...miniBtn, background: '#2a2a2a' }}>✕</button>
-            </form>
+            <>
+              <form onSubmit={addTrace} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                <input autoFocus value={newTrace} onChange={e => setNewTrace(e.target.value)} placeholder="New trace…" style={{ flex: 1, ...fieldInput }} />
+                <button type="submit" style={miniBtn}>Add</button>
+                <button type="button" onClick={() => { setAddingTrace(false); setTraceError('') }} style={{ ...miniBtn, background: '#2a2a2a' }}>✕</button>
+              </form>
+              {traceError && <p style={{ color: '#f87171', fontSize: '0.72rem', margin: '0.25rem 0 0' }}>{traceError}</p>}
+            </>
           ) : (
             <button onClick={() => setAddingTrace(true)} style={{ ...miniBtn, marginTop: '0.75rem' }}>+ Trace</button>
           )}

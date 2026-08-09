@@ -297,48 +297,64 @@ function EndeavorTab({ endeavors, traces, refresh, refreshTraces, activeId }) {
 function AddTraceForm({ onAdd }) {
   const [title, setTitle] = useState('')
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState('')
 
   async function submit(e) {
     e.preventDefault()
     if (!title.trim()) return
-    await api.createTrace({ title })
-    setTitle('')
-    setOpen(false)
-    onAdd()
+    try {
+      await api.createTrace({ title })
+      setTitle('')
+      setOpen(false)
+      setError('')
+      onAdd()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
-  return open ? (
-    <form onSubmit={submit} style={{ display: 'flex', gap: '0.5rem' }}>
-      <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="New trace…" style={inputStyle} />
-      <button type="submit" style={btnStyle}>Add</button>
-      <button type="button" onClick={() => setOpen(false)} style={{ ...btnStyle, background: '#2a2a2a' }}>Cancel</button>
-    </form>
-  ) : (
-    <button onClick={() => setOpen(true)} style={btnStyle}>+ New Trace</button>
+  if (!open) return <button onClick={() => setOpen(true)} style={btnStyle}>+ New Trace</button>
+  return (
+    <>
+      <form onSubmit={submit} style={{ display: 'flex', gap: '0.5rem' }}>
+        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="New trace…" style={inputStyle} />
+        <button type="submit" style={btnStyle}>Add</button>
+        <button type="button" onClick={() => { setOpen(false); setError('') }} style={{ ...btnStyle, background: '#2a2a2a' }}>Cancel</button>
+      </form>
+      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '0.35rem' }}>{error}</p>}
+    </>
   )
 }
 
 function AddLeadForm({ onAdd }) {
   const [title, setTitle] = useState('')
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState('')
 
   async function submit(e) {
     e.preventDefault()
     if (!title.trim()) return
-    await api.createLead({ title })
-    setTitle('')
-    setOpen(false)
-    onAdd()
+    try {
+      await api.createLead({ title })
+      setTitle('')
+      setOpen(false)
+      setError('')
+      onAdd()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
-  return open ? (
-    <form onSubmit={submit} style={{ display: 'flex', gap: '0.5rem' }}>
-      <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="New lead…" style={inputStyle} />
-      <button type="submit" style={btnStyle}>Add</button>
-      <button type="button" onClick={() => setOpen(false)} style={{ ...btnStyle, background: '#2a2a2a' }}>Cancel</button>
-    </form>
-  ) : (
-    <button onClick={() => setOpen(true)} style={btnStyle}>+ New Lead</button>
+  if (!open) return <button onClick={() => setOpen(true)} style={btnStyle}>+ New Lead</button>
+  return (
+    <>
+      <form onSubmit={submit} style={{ display: 'flex', gap: '0.5rem' }}>
+        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="New lead…" style={inputStyle} />
+        <button type="submit" style={btnStyle}>Add</button>
+        <button type="button" onClick={() => { setOpen(false); setError('') }} style={{ ...btnStyle, background: '#2a2a2a' }}>Cancel</button>
+      </form>
+      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '0.35rem' }}>{error}</p>}
+    </>
   )
 }
 

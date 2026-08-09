@@ -2,6 +2,18 @@
 
 ---
 
+## 0. Value Statement
+
+**What it does:** velaWright is a full-stack developer productivity app for tracking projects across their entire lifecycle — from a raw idea to a deployed product. Users capture fleeting thoughts as Traces, develop them into Leads, promote them into Endeavors, and mark them Deployed. Marks (tasks) and a soft-delete Stash layer live across all three stages.
+
+**Who it's for:** Developers who want a single, personal space to keep their work alive — not just during a course, but across a career.
+
+**The problem:** Projects and ideas get abandoned when there's no system to hold them. Notes apps are too generic, GitHub is too code-centric, and Notion requires too much setup. Nothing is designed for the developer-specific workflow of idea → project → deployment.
+
+**The value:** velaWright is opinionated around that exact workflow. A Trace logged on mobile at 2am becomes a Lead becomes an Endeavor becomes a live deployment — all within one account, with full history and no dead ends. The companion React Native app means the capture step has no friction: ideas go in immediately, wherever they happen.
+
+---
+
 ## 1. System Diagram
 
 ```

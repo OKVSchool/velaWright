@@ -113,3 +113,6 @@ If a token is compromised, it remains valid until expiry unless the user's accou
 
 **Uploaded files are served without re-validation**
 Files are served statically from `/uploads`. The file type is checked on upload (by MIME type), but the stored file is served by content path. A file with a `.jpg` extension containing non-image content would still be served. In production, file storage should move to an object store (S3, Cloudinary) with its own content-type enforcement.
+
+**React Native transitive vulnerabilities in Expo SDK 54**
+`npm audit` reports 14 vulnerabilities (13 moderate, 1 high) in `postcss` and `uuid`, both transitive dependencies of `expo ~54`. Neither is exploitable through the app's attack surface — the `postcss` XSS requires browser-side CSS stringification (React Native has no browser), and the `uuid` buffer bounds issue requires manually passing a `buf` argument that the app never uses. The fix (`npm audit fix --force`) would upgrade to Expo SDK 57, a breaking change requiring a full SDK migration. Accepted as known risk for this project scope.

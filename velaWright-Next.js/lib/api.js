@@ -24,6 +24,12 @@ export const api = {
   // Auth
   signup: (body) => request('/auth/signup', { method: 'POST', body: JSON.stringify(body) }),
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  updateProfile: (body) => request('/auth/me', { method: 'PATCH', body: JSON.stringify(body) }),
+  changePassword: (body) => request('/auth/me/password', { method: 'PATCH', body: JSON.stringify(body) }),
+  verifyEmail: (token) => request('/auth/verify-email', { method: 'POST', body: JSON.stringify({ token }) }),
+  resendVerification: () => request('/auth/resend-verification', { method: 'POST' }),
+  forgotPassword: (body) => request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(body) }),
+  resetPassword: (token, body) => request(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify(body) }),
 
   // Endeavors
   getEndeavors: () => request('/endeavors'),

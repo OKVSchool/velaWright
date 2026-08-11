@@ -40,8 +40,15 @@ export function AuthProvider({ children }) {
     router.push('/login')
   }
 
+  function updateUser(userData) {
+    if (!user) return
+    const updated = { ...user, ...userData }
+    localStorage.setItem('vw_user', JSON.stringify(updated))
+    setUser(updated)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, signup, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -18,6 +18,7 @@ function daysLeft(deletedAt) {
 export default function Settings() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [section, setSection] = useState('stash')
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -39,29 +40,168 @@ export default function Settings() {
         <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', paddingLeft: '0.75rem' }}>
           Settings
         </p>
-        <button style={{
-          display: 'block',
-          width: '100%',
-          textAlign: 'left',
-          background: '#2a2a2a',
-          border: 'none',
-          color: '#e5e5e5',
-          padding: '0.5rem 0.75rem',
-          borderRadius: 6,
-          fontSize: '0.9rem',
-          fontWeight: 600,
-          cursor: 'default',
-          marginBottom: '0.15rem',
-        }}>
-          Stash
-        </button>
+        {['stash', 'account'].map(s => (
+          <button
+            key={s}
+            onClick={() => setSection(s)}
+            style={{
+              display: 'block',
+              width: '100%',
+              textAlign: 'left',
+              background: section === s ? '#2a2a2a' : 'none',
+              border: 'none',
+              color: section === s ? '#e5e5e5' : '#888',
+              padding: '0.5rem 0.75rem',
+              borderRadius: 6,
+              fontSize: '0.9rem',
+              fontWeight: section === s ? 600 : 400,
+              cursor: 'pointer',
+              marginBottom: '0.15rem',
+              textTransform: 'capitalize',
+            }}
+          >
+            {s}
+          </button>
+        ))}
       </nav>
 
       {/* Content */}
       <div style={{ flex: 1, paddingLeft: '2rem', paddingTop: '0.5rem', maxWidth: 640 }}>
-        <StashSection />
+        {section === 'stash'   && <StashSection />}
+        {section === 'account' && <AccountSection />}
       </div>
 
+    </div>
+  )
+}
+
+function AccountSection() {
+  const { user, updateUser } = useAuth()
+
+  const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' })
+  const [profileError, setProfileError] = useState('')
+  const [profileSuccess, setProfileSuccess] = useState('')
+  const [profileSaving, setProfileSaving] = useState(false)
+
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+
+  async function saveProfile(e) {
+    e.preventDefault()
+    setProfileError('')
+    setProfileSuccess('')
+    setProfileSaving(true)
+    try {
+      const { user: updated } = await api.updateProfile({
+        name: profile.name,
+        email: profile.email,
+      })
+      updateUser(updated)
+      setProfileSuccess('Profile updated')
+    } catch (err) {
+      setProfileError(err.message)
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
+  async function savePassword(e) {
+    e.preventDefault()
+    setPasswordError('')
+    setPasswordSuccess('')
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      setPasswordError('New passwords do not match')
+      return
+    }
+    setPasswordSaving(true)
+    try {
+      await api.changePassword({
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword,
+      })
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setPasswordSuccess('Password updated')
+    } catch (err) {
+      setPasswordError(err.message)
+    } finally {
+      setPasswordSaving(false)
+    }
+  }
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>Account</h2>
+      <p style={{ color: '#888', fontSize: '0.875rem', marginBottom: '2rem' }}>
+        Update your name, email, or password.
+      </p>
+
+      {/* Profile */}
+      <div style={card}>
+        <h3 style={subhead}>Profile</h3>
+        {profileError   && <p style={errorStyle}>{profileError}</p>}
+        {profileSuccess && <p style={successStyle}>{profileSuccess}</p>}
+        <form onSubmit={saveProfile} style={formCol}>
+          <label style={labelStyle}>Name</label>
+          <input
+            value={profile.name}
+            onChange={e => { setProfile(p => ({ ...p, name: e.target.value })); setProfileSuccess('') }}
+            required
+            minLength={2}
+            style={inputStyle}
+          />
+          <label style={labelStyle}>Email</label>
+          <input
+            type="email"
+            value={profile.email}
+            onChange={e => { setProfile(p => ({ ...p, email: e.target.value })); setProfileSuccess('') }}
+            required
+            style={inputStyle}
+          />
+          <button type="submit" disabled={profileSaving} style={btnStyle}>
+            {profileSaving ? 'Saving…' : 'Save Profile'}
+          </button>
+        </form>
+      </div>
+
+      {/* Password */}
+      <div style={{ ...card, marginTop: '1.5rem' }}>
+        <h3 style={subhead}>Change Password</h3>
+        {passwordError   && <p style={errorStyle}>{passwordError}</p>}
+        {passwordSuccess && <p style={successStyle}>{passwordSuccess}</p>}
+        <form onSubmit={savePassword} style={formCol}>
+          <label style={labelStyle}>Current Password</label>
+          <input
+            type="password"
+            value={passwords.currentPassword}
+            onChange={e => { setPasswords(p => ({ ...p, currentPassword: e.target.value })); setPasswordSuccess('') }}
+            required
+            style={inputStyle}
+          />
+          <label style={labelStyle}>New Password</label>
+          <input
+            type="password"
+            value={passwords.newPassword}
+            onChange={e => { setPasswords(p => ({ ...p, newPassword: e.target.value })); setPasswordSuccess('') }}
+            required
+            minLength={8}
+            style={inputStyle}
+          />
+          <label style={labelStyle}>Confirm New Password</label>
+          <input
+            type="password"
+            value={passwords.confirmPassword}
+            onChange={e => { setPasswords(p => ({ ...p, confirmPassword: e.target.value })); setPasswordSuccess('') }}
+            required
+            minLength={8}
+            style={inputStyle}
+          />
+          <button type="submit" disabled={passwordSaving} style={btnStyle}>
+            {passwordSaving ? 'Saving…' : 'Update Password'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
@@ -186,3 +326,12 @@ function StashSection() {
     </div>
   )
 }
+
+const card      = { background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '1.25rem 1.5rem' }
+const subhead   = { fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }
+const formCol   = { display: 'flex', flexDirection: 'column', gap: '0.6rem' }
+const labelStyle = { fontSize: '0.8rem', color: '#888', marginBottom: '-0.2rem' }
+const inputStyle = { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#e5e5e5', padding: '0.65rem 0.9rem', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }
+const btnStyle  = { background: '#e07820', color: '#fff', border: 'none', padding: '0.65rem 1.25rem', borderRadius: 6, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.25rem' }
+const errorStyle   = { color: '#f87171', fontSize: '0.85rem', background: '#1a1a1a', padding: '0.5rem 0.75rem', borderRadius: 6, marginBottom: '0.5rem' }
+const successStyle = { color: '#22c55e', fontSize: '0.85rem', background: '#1a1a1a', padding: '0.5rem 0.75rem', borderRadius: 6, marginBottom: '0.5rem' }

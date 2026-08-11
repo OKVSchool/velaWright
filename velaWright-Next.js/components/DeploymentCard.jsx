@@ -41,11 +41,11 @@ export default function DeploymentCard({ endeavor }) {
 
         {/* Title + status */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>
             {endeavor.title}
-{endeavor.origin && <Chevron type={ORIGIN_CHEVRON[endeavor.origin]} />}
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {endeavor.origin && <Chevron type={ORIGIN_CHEVRON[endeavor.origin]} small />}
             <span style={{
               fontSize: '0.7rem', fontWeight: 600,
               color: STATUS_COLORS[endeavor.status] || '#888',

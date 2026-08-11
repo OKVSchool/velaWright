@@ -1,21 +1,22 @@
 const shadow = "drop-shadow(0 1px 2px rgba(0,0,0,0.45))"
 
-const svgStyle = {
+const svgStyle = (small) => ({
   display: 'inline-block',
   verticalAlign: 'middle',
   flexShrink: 0,
-  marginLeft: '10px',
+  marginLeft: small ? '4px' : '10px',
+  marginRight: small ? '2px' : '0px',
   filter: shadow,
   overflow: 'visible',
-}
+})
 
-export default function Chevron({ type }) {
+export default function Chevron({ type, small = false }) {
   if (type === "basic") {
     return (
       <svg
-        width="14" height="10"
+        width={small ? 9 : 14} height={small ? 6 : 10}
         viewBox="0 0 20 14"
-        style={svgStyle}
+        style={svgStyle(small)}
         aria-label="Promoted from Lead"
       >
         <polyline
@@ -33,9 +34,9 @@ export default function Chevron({ type }) {
   if (type === "ornate") {
     return (
       <svg
-        width="17" height="19"
+        width={small ? 11 : 17} height={small ? 12 : 19}
         viewBox="-2 -2 24 24"
-        style={svgStyle}
+        style={svgStyle(small)}
         aria-label="Started as an Endeavor"
       >
         <polyline
@@ -61,9 +62,9 @@ export default function Chevron({ type }) {
   if (type === "grand") {
     return (
       <svg
-        width="17" height="23"
+        width={small ? 11 : 17} height={small ? 15 : 23}
         viewBox="-2 -2 24 28"
-        style={svgStyle}
+        style={svgStyle(small)}
         aria-label="Promoted from Trace to Deployment"
       >
         <polyline

@@ -1,5 +1,6 @@
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
+import { ThemeProvider } from '@/context/ThemeContext'
 import Nav from '@/components/Nav'
 
 export const metadata = {
@@ -10,13 +11,23 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+Double+Pica+SC&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Oldenburg&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
-        <AuthProvider>
-          <Nav />
-          <main style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 1rem' }}>
-            {children}
-          </main>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Nav />
+            <main style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 1rem' }}>
+              {children}
+            </main>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

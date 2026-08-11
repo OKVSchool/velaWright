@@ -124,7 +124,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   const priorityColors = { none: '#555', low: '#22c55e', medium: '#f59e0b', high: '#ef4444' }
 
   return (
-    <div ref={ref} style={{ background: '#1a1a1a', border: `1px solid ${highlighted ? '#e07820' : '#2a2a2a'}`, borderRadius: 8, transition: 'border-color 0.4s' }}>
+    <div ref={ref} style={{ background: '#1a1a1a', border: `1px solid ${highlighted ? 'var(--accent)' : '#2a2a2a'}`, borderRadius: 8, transition: 'border-color 0.4s' }}>
       {confirming && (
         <ConfirmModal
           message={`Select ${endeavor.title}'s fate.`}
@@ -149,7 +149,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
             onClick={e => e.stopPropagation()}
             onBlur={saveTitle}
             onKeyDown={e => e.key === 'Enter' && saveTitle()}
-            style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4 }}
+            style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4, fontFamily: 'var(--font-body)' }}
           />
         ) : (
           <span style={{ flex: 1, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
@@ -193,7 +193,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
 
         <button onClick={e => { e.stopPropagation(); setEditingTitle(true); setSaveError('') }} aria-label="Edit title" style={iconBtn}>✏️</button>
         <button onClick={e => { e.stopPropagation(); setConfirming(true) }} aria-label="Delete endeavor" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
-        <button onClick={e => { e.stopPropagation(); promoteToDeployment() }} aria-label="Promote to Deployment" style={{ ...iconBtn, fontSize: '0.7rem', color: '#e07820', fontWeight: 600 }}>↑ Deploy</button>
+        <button onClick={e => { e.stopPropagation(); promoteToDeployment() }} aria-label="Promote to Deployment" style={{ ...iconBtn, fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>↑ Deploy</button>
       </div>
 
       {saveError && (
@@ -234,7 +234,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
               )}
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.8rem', color: '#888', marginBottom: '0.5rem' }}>
                 {endeavor.repoUrl && (
-                  <a href={endeavor.repoUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#e07820', textDecoration: 'none' }}>
+                  <a href={endeavor.repoUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
                     Repo ↗
                   </a>
                 )}
@@ -242,7 +242,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
               {endeavor.tags?.length > 0 && (
                 <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
                   {endeavor.tags.map(tag => (
-                    <span key={tag} style={{ fontSize: '0.7rem', background: '#e0782022', color: '#e07820', padding: '0.15rem 0.4rem', borderRadius: 4 }}>
+                    <span key={tag} style={{ fontSize: '0.7rem', background: 'color-mix(in srgb, var(--accent) 13%, transparent)', color: 'var(--accent)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>
                       {tag}
                     </span>
                   ))}
@@ -257,7 +257,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
           {/* Traces */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
             {traces.length === 0
-              ? <p style={{ color: '#555', fontSize: '0.875rem' }}>Uncharted Waters</p>
+              ? <p style={{ color: '#555', fontSize: '0.875rem', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
               : traces.map(t => <TracePanel key={t._id} trace={t} onDelete={onUpdateTraces} nested />)
             }
           </div>
@@ -285,5 +285,5 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
 }
 
 const iconBtn = { background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '0.1rem 0.25rem', color: '#e5e5e5' }
-const fieldInput = { background: '#0f0f0f', border: '1px solid #333', color: '#e5e5e5', padding: '0.4rem 0.6rem', borderRadius: 4, fontSize: '0.875rem', width: '100%', outline: 'none', boxSizing: 'border-box' }
-const miniBtn = { background: '#e07820', color: '#fff', border: 'none', padding: '0.4rem 0.7rem', borderRadius: 4, fontSize: '0.85rem', cursor: 'pointer' }
+const fieldInput = { background: '#0f0f0f', border: '1px solid #333', color: '#e5e5e5', padding: '0.4rem 0.6rem', borderRadius: 4, fontSize: '0.875rem', width: '100%', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)' }
+const miniBtn = { background: 'var(--accent)', color: '#fff', border: 'none', padding: '0.4rem 0.7rem', borderRadius: 4, fontSize: '0.85rem', cursor: 'pointer' }

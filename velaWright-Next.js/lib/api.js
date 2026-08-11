@@ -26,11 +26,6 @@ export const api = {
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   updateProfile: (body) => request('/auth/me', { method: 'PATCH', body: JSON.stringify(body) }),
   changePassword: (body) => request('/auth/me/password', { method: 'PATCH', body: JSON.stringify(body) }),
-  verifyEmail: (token) => request('/auth/verify-email', { method: 'POST', body: JSON.stringify({ token }) }),
-  resendVerification: () => request('/auth/resend-verification', { method: 'POST' }),
-  forgotPassword: (body) => request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(body) }),
-  resetPassword: (token, body) => request(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify(body) }),
-
   // Endeavors
   getEndeavors: () => request('/endeavors'),
   getEndeavor: (id) => request(`/endeavors/${id}`),
@@ -38,15 +33,6 @@ export const api = {
   updateEndeavor: (id, body) => request(`/endeavors/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteEndeavor: (id) => request(`/endeavors/${id}`, { method: 'DELETE' }),
   stashEndeavor: (id) => request(`/endeavors/${id}/stash`, { method: 'PATCH' }),
-  uploadEndeavorImage: (id, formData) => {
-    const token = getToken()
-    return fetch(`${BASE_URL}/endeavors/${id}/image`, {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData
-    }).then(r => r.json())
-  },
-
   // Leads
   getLeads: () => request('/leads'),
   getLead: (id) => request(`/leads/${id}`),

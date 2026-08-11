@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { api } from '@/lib/api'
 import ConfirmModal from '@/components/ConfirmModal'
 
 const TYPE_LABEL = { endeavors: 'Endeavor', leads: 'Lead', traces: 'Trace', marks: 'Mark' }
-const TYPE_COLOR = { endeavors: '#3b82f6', leads: '#e07820', traces: '#a78bfa', marks: '#22c55e' }
+const TYPE_COLOR = { endeavors: '#3b82f6', leads: 'var(--accent)', traces: '#a78bfa', marks: '#22c55e' }
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
 
 function daysLeft(deletedAt) {
@@ -40,7 +41,7 @@ export default function Settings() {
         <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', paddingLeft: '0.75rem' }}>
           Settings
         </p>
-        {['stash', 'account'].map(s => (
+        {['stash', 'account', 'appearance'].map(s => (
           <button
             key={s}
             onClick={() => setSection(s)}
@@ -67,8 +68,9 @@ export default function Settings() {
 
       {/* Content */}
       <div style={{ flex: 1, paddingLeft: '2rem', paddingTop: '0.5rem', maxWidth: 640 }}>
-        {section === 'stash'   && <StashSection />}
-        {section === 'account' && <AccountSection />}
+        {section === 'stash'      && <StashSection />}
+        {section === 'account'    && <AccountSection />}
+        {section === 'appearance' && <AppearanceSection />}
       </div>
 
     </div>
@@ -267,7 +269,7 @@ function StashSection() {
       {binLoading ? (
         <p style={{ color: '#555' }}>Loading…</p>
       ) : bin.length === 0 ? (
-        <p style={{ color: '#555', fontSize: '0.875rem' }}>Cleaned Out</p>
+        <p style={{ color: '#555', fontSize: '0.875rem', fontFamily: 'var(--font-saying)' }}>Cleaned Out</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {bin.map(item => {
@@ -327,11 +329,129 @@ function StashSection() {
   )
 }
 
+const PRESETS = [
+  { color: '#e07820', label: 'Ember' },
+  { color: '#3b82f6', label: 'Blue' },
+  { color: '#22c55e', label: 'Green' },
+  { color: '#a78bfa', label: 'Violet' },
+  { color: '#ef4444', label: 'Red' },
+  { color: '#ec4899', label: 'Pink' },
+  { color: '#f59e0b', label: 'Amber' },
+  { color: '#06b6d4', label: 'Cyan' },
+]
+
+function AppearanceSection() {
+  const { accent, setAccent, resetAccent, fontMode, setFontMode } = useTheme()
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>Appearance</h2>
+      <p style={{ color: '#888', fontSize: '0.875rem', marginBottom: '2rem' }}>
+        Choose the accent color used throughout the app.
+      </p>
+
+      <div style={card}>
+        <h3 style={subhead}>Accent Color</h3>
+
+        {/* Color wheel + hex value */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <label style={{ position: 'relative', cursor: 'pointer', display: 'inline-block' }}>
+            <div style={{
+              width: 52, height: 52,
+              borderRadius: 10,
+              background: accent,
+              border: '2px solid #3a3a3a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" />
+                <line x1="4.93" y1="4.93" x2="9.17" y2="9.17" /><line x1="14.83" y1="14.83" x2="19.07" y2="19.07" />
+                <line x1="14.83" y1="9.17" x2="19.07" y2="4.93" /><line x1="14.83" y1="9.17" x2="18.36" y2="5.64" />
+                <line x1="4.93" y1="19.07" x2="9.17" y2="14.83" />
+              </svg>
+            </div>
+            <input
+              type="color"
+              value={accent}
+              onChange={e => setAccent(e.target.value)}
+              style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', top: 0, left: 0, cursor: 'pointer' }}
+            />
+          </label>
+          <div>
+            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.15rem' }}>Custom color</p>
+            <p style={{ fontFamily: 'monospace', fontSize: '0.95rem', color: '#e5e5e5' }}>{accent}</p>
+          </div>
+        </div>
+
+        {/* Preset swatches */}
+        <p style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Presets</p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          {PRESETS.map(({ color, label }) => (
+            <button
+              key={color}
+              onClick={() => setAccent(color)}
+              title={label}
+              style={{
+                width: 32, height: 32,
+                background: color,
+                border: accent === color ? '2px solid #fff' : '2px solid transparent',
+                borderRadius: 6,
+                cursor: 'pointer',
+                boxShadow: accent === color ? '0 0 0 2px #000' : 'none',
+                transition: 'box-shadow 0.1s',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Reset */}
+        <button
+          onClick={resetAccent}
+          style={{ background: 'none', border: '1px solid #333', color: '#666', padding: '0.5rem 1rem', borderRadius: 6, fontSize: '0.85rem', cursor: 'pointer' }}
+        >
+          Reset to default
+        </button>
+      </div>
+
+      {/* Font Style */}
+      <div style={{ ...card, marginTop: '1.5rem' }}>
+        <h3 style={subhead}>Font Style</h3>
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          {[
+            { mode: 'default', label: 'Default', hint: 'Oldenburg · Cinzel · Lora · IM Fell', labelFont: "'Lora', serif" },
+            { mode: 'basic',   label: 'Basic',   hint: 'System font stack',                    labelFont: 'inherit' },
+          ].map(({ mode, label, hint, labelFont }) => (
+            <button
+              key={mode}
+              onClick={() => setFontMode(mode)}
+              style={{
+                flex: 1,
+                padding: '0.75rem 1rem',
+                borderRadius: 8,
+                border: fontMode === mode ? '2px solid var(--accent)' : '2px solid #2a2a2a',
+                background: fontMode === mode ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : '#1a1a1a',
+                color: fontMode === mode ? 'var(--accent)' : '#888',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.2rem', fontFamily: labelFont }}>{label}</p>
+              <p style={{ fontSize: '0.7rem', color: fontMode === mode ? 'color-mix(in srgb, var(--accent) 70%, #888)' : '#555' }}>{hint}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const card      = { background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '1.25rem 1.5rem' }
 const subhead   = { fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }
 const formCol   = { display: 'flex', flexDirection: 'column', gap: '0.6rem' }
 const labelStyle = { fontSize: '0.8rem', color: '#888', marginBottom: '-0.2rem' }
-const inputStyle = { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#e5e5e5', padding: '0.65rem 0.9rem', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }
-const btnStyle  = { background: '#e07820', color: '#fff', border: 'none', padding: '0.65rem 1.25rem', borderRadius: 6, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.25rem' }
+const inputStyle = { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#e5e5e5', padding: '0.65rem 0.9rem', borderRadius: 6, fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)' }
+const btnStyle  = { background: 'var(--accent)', color: '#fff', border: 'none', padding: '0.65rem 1.25rem', borderRadius: 6, fontSize: '0.9rem', fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.25rem' }
 const errorStyle   = { color: '#f87171', fontSize: '0.85rem', background: '#1a1a1a', padding: '0.5rem 0.75rem', borderRadius: 6, marginBottom: '0.5rem' }
 const successStyle = { color: '#22c55e', fontSize: '0.85rem', background: '#1a1a1a', padding: '0.5rem 0.75rem', borderRadius: 6, marginBottom: '0.5rem' }

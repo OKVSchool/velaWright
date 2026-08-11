@@ -86,7 +86,7 @@ function AddEndeavorFormInner() {
     <div style={{ maxWidth: 600, margin: '0 auto' }}>
       <button
         onClick={() => router.push('/leads')}
-        style={{ background: 'none', border: 'none', color: '#e07820', marginBottom: '1.5rem', fontSize: '0.875rem', cursor: 'pointer' }}
+        style={{ background: 'none', border: 'none', color: 'var(--accent)', marginBottom: '1.5rem', fontSize: '0.875rem', cursor: 'pointer' }}
       >
         ← Back
       </button>
@@ -137,15 +137,17 @@ const inputStyle = {
   width: '100%',
   outline: 'none',
   boxSizing: 'border-box',
+  fontFamily: 'var(--font-body)',
 }
 
 const btnStyle = {
-  background: '#e07820',
+  background: 'var(--accent)',
   color: '#fff',
   border: 'none',
   padding: '0.75rem',
   borderRadius: 6,
   fontSize: '1rem',
   fontWeight: 600,
+  fontFamily: 'var(--font-body)',
   cursor: 'pointer',
 }

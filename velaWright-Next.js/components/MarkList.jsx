@@ -86,16 +86,16 @@ export default function MarkList({ parentId, parentType }) {
             value={newTitle}
             onChange={e => setNewTitle(e.target.value)}
             placeholder="Mark title"
-            style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#e5e5e5', padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.875rem' }}
+            style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#e5e5e5', padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.875rem', fontFamily: 'var(--font-body)' }}
           />
-          <button type="submit" style={{ background: '#e07820', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: 6, fontWeight: 600 }}>
+          <button type="submit" style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: 6, fontWeight: 600, fontFamily: 'var(--font-body)' }}>
             Add
           </button>
         </form>
       )}
 
       {marks.length === 0 ? (
-        <p style={{ color: '#555', fontSize: '0.875rem' }}>No Marks</p>
+        <p style={{ color: '#555', fontSize: '0.875rem', fontFamily: 'var(--font-saying)' }}>No Marks</p>
       ) : (
         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {marks.map(mark => (
@@ -112,7 +112,7 @@ export default function MarkList({ parentId, parentType }) {
                 type="checkbox"
                 checked={mark.done}
                 onChange={() => toggleDone(mark)}
-                style={{ accentColor: '#e07820', width: 16, height: 16 }}
+                style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
               />
               <span style={{ flex: 1, textDecoration: mark.done ? 'line-through' : 'none', color: mark.done ? '#555' : '#e5e5e5', fontSize: '0.9rem' }}>
                 {mark.title}

@@ -12,7 +12,7 @@ const TABS = ['traces', 'leads', 'endeavors']
 
 const TYPE_COLORS = {
   Endeavor: '#3b82f6',
-  Lead:     '#e07820',
+  Lead:     'var(--accent)',
   Trace:    '#a78bfa',
   Mark:     '#22c55e',
 }
@@ -80,13 +80,14 @@ export default function VentureList() {
             style={{
               width: '100%',
               background: '#1a1a1a',
-              border: `1px solid ${searching ? '#e07820' : '#2a2a2a'}`,
+              border: `1px solid ${searching ? 'var(--accent)' : '#2a2a2a'}`,
               color: '#e5e5e5',
               padding: '0.5rem 2rem 0.5rem 0.85rem',
               borderRadius: 6,
               fontSize: '0.875rem',
               outline: 'none',
               boxSizing: 'border-box',
+              fontFamily: 'var(--font-body)',
             }}
           />
           {searching && (
@@ -126,12 +127,13 @@ export default function VentureList() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: tab === t ? '#e07820' : '#888',
-                  fontWeight: tab === t ? 600 : 400,
+                  color: tab === t ? 'var(--accent)' : '#e5e5e5',
+                  fontWeight: 700,
                   padding: '0.5rem 1rem',
-                  borderBottom: tab === t ? '2px solid #e07820' : '2px solid transparent',
+                  borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent',
                   fontSize: '0.9rem',
                   textTransform: 'capitalize',
+                  fontFamily: 'var(--font-tab)',
                   cursor: 'pointer'
                 }}
               >
@@ -161,13 +163,13 @@ function SearchResults({ query, endeavors, leads, traces, marks, onNavigate }) {
   })
 
   leads.forEach(lead => {
-    if (match(lead.title, lead.description, lead.category, lead.status, lead.priority)) {
-      results.push({ type: 'Lead', title: lead.title, meta: [lead.priority !== 'none' && lead.priority, lead.status].filter(Boolean), context: null, navigateTo: { tab: 'leads', activeId: lead._id } })
+    if (match(lead.title, lead.description, lead.framework, lead.lane, lead.status, ...(lead.tags || []))) {
+      results.push({ type: 'Lead', title: lead.title, meta: [lead.framework, lead.lane].filter(Boolean), context: null, navigateTo: { tab: 'leads', activeId: lead._id } })
     }
   })
 
   traces.forEach(t => {
-    if (match(t.title, t.category)) {
+    if (match(t.title, t.description, t.lane, ...(t.tags || []))) {
       const parentEndeavor = t.projectId ? endeavors.find(e => e._id === t.projectId) : null
       const parentLead     = t.ideaId    ? leads.find(l => l._id === t.ideaId)        : null
       const context = parentEndeavor ? `in endeavor: ${parentEndeavor.title}`
@@ -176,7 +178,7 @@ function SearchResults({ query, endeavors, leads, traces, marks, onNavigate }) {
       const navigateTo = parentEndeavor ? { tab: 'endeavors', activeId: parentEndeavor._id }
         : parentLead ? { tab: 'leads', activeId: parentLead._id }
         : { tab: 'traces', activeId: t._id }
-      results.push({ type: 'Trace', title: t.title, meta: t.category ? [t.category] : [], context, navigateTo })
+      results.push({ type: 'Trace', title: t.title, meta: [t.lane].filter(Boolean), context, navigateTo })
     }
   })
 
@@ -190,7 +192,7 @@ function SearchResults({ query, endeavors, leads, traces, marks, onNavigate }) {
   })
 
   if (results.length === 0) {
-    return <p style={{ color: '#888', marginTop: '2rem' }}>No results for &ldquo;{query}&rdquo;</p>
+    return <p style={{ color: '#888', marginTop: '2rem', fontFamily: 'var(--font-saying)' }}>No results for &ldquo;{query}&rdquo;</p>
   }
 
   return (
@@ -239,7 +241,7 @@ function highlight(text, query) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark style={{ background: '#e0782033', color: '#e07820', borderRadius: 2, padding: 0 }}>
+      <mark style={{ background: 'color-mix(in srgb, var(--accent) 20%, transparent)', color: 'var(--accent)', borderRadius: 2, padding: 0 }}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -251,10 +253,10 @@ function TracesTab({ traces, refresh, activeId }) {
   const standalone = traces.filter(t => !t.ideaId && !t.projectId)
   return (
     <div>
-      <AddTraceForm onAdd={refresh} />
+      <AddTraceForm />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
         {standalone.length === 0 ? (
-          <p style={{ color: '#555' }}>Uncharted Waters</p>
+          <p style={{ color: '#555', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
         ) : standalone.map(t => <TracePanel key={t._id} trace={t} onDelete={refresh} isActive={activeId === t._id} />)}
       </div>
     </div>
@@ -264,10 +266,10 @@ function TracesTab({ traces, refresh, activeId }) {
 function LeadsTab({ leads, traces, refresh, refreshTraces, activeId }) {
   return (
     <div>
-      <AddLeadForm onAdd={refresh} />
+      <AddLeadForm />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
         {leads.length === 0 ? (
-          <p style={{ color: '#555' }}>Uncharted Waters</p>
+          <p style={{ color: '#555', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
         ) : leads.map(lead => (
           <LeadPanel key={lead._id} lead={lead} traces={traces.filter(t => t.ideaId === lead._id)} onUpdate={refresh} onUpdateTraces={refreshTraces} isActive={activeId === lead._id} />
         ))}
@@ -285,7 +287,7 @@ function EndeavorTab({ endeavors, traces, refresh, refreshTraces, activeId }) {
       </button>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
         {endeavors.length === 0 ? (
-          <p style={{ color: '#555' }}>Uncharted Waters</p>
+          <p style={{ color: '#555', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
         ) : endeavors.map(e => (
           <EndeavorPanel key={e._id} endeavor={e} traces={traces.filter(t => t.projectId === e._id)} onUpdate={refresh} onUpdateTraces={refreshTraces} isActive={activeId === e._id} />
         ))}
@@ -294,68 +296,14 @@ function EndeavorTab({ endeavors, traces, refresh, refreshTraces, activeId }) {
   )
 }
 
-function AddTraceForm({ onAdd }) {
-  const [title, setTitle] = useState('')
-  const [open, setOpen] = useState(false)
-  const [error, setError] = useState('')
-
-  async function submit(e) {
-    e.preventDefault()
-    if (!title.trim()) return
-    try {
-      await api.createTrace({ title })
-      setTitle('')
-      setOpen(false)
-      setError('')
-      onAdd()
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  if (!open) return <button onClick={() => setOpen(true)} style={btnStyle}>+ New Trace</button>
-  return (
-    <>
-      <form onSubmit={submit} style={{ display: 'flex', gap: '0.5rem' }}>
-        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="New trace…" style={inputStyle} />
-        <button type="submit" style={btnStyle}>Add</button>
-        <button type="button" onClick={() => { setOpen(false); setError('') }} style={{ ...btnStyle, background: '#2a2a2a' }}>Cancel</button>
-      </form>
-      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '0.35rem' }}>{error}</p>}
-    </>
-  )
+function AddTraceForm() {
+  const router = useRouter()
+  return <button onClick={() => router.push('/traces/new')} style={btnStyle}>+ New Trace</button>
 }
 
-function AddLeadForm({ onAdd }) {
-  const [title, setTitle] = useState('')
-  const [open, setOpen] = useState(false)
-  const [error, setError] = useState('')
-
-  async function submit(e) {
-    e.preventDefault()
-    if (!title.trim()) return
-    try {
-      await api.createLead({ title })
-      setTitle('')
-      setOpen(false)
-      setError('')
-      onAdd()
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  if (!open) return <button onClick={() => setOpen(true)} style={btnStyle}>+ New Lead</button>
-  return (
-    <>
-      <form onSubmit={submit} style={{ display: 'flex', gap: '0.5rem' }}>
-        <input autoFocus value={title} onChange={e => setTitle(e.target.value)} placeholder="New lead…" style={inputStyle} />
-        <button type="submit" style={btnStyle}>Add</button>
-        <button type="button" onClick={() => { setOpen(false); setError('') }} style={{ ...btnStyle, background: '#2a2a2a' }}>Cancel</button>
-      </form>
-      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '0.35rem' }}>{error}</p>}
-    </>
-  )
+function AddLeadForm() {
+  const router = useRouter()
+  return <button onClick={() => router.push('/leads/new')} style={btnStyle}>+ New Lead</button>
 }
 
 const inputStyle = {
@@ -369,11 +317,12 @@ const inputStyle = {
 }
 
 const btnStyle = {
-  background: '#e07820',
+  background: 'var(--accent)',
   color: '#fff',
   border: 'none',
   padding: '0.6rem 1rem',
   borderRadius: 6,
   fontWeight: 600,
+  fontFamily: 'var(--font-body)',
   cursor: 'pointer'
 }

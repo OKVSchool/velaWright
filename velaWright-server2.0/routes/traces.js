@@ -5,9 +5,11 @@ const validate = require('../middleware/validate')
 const { clientError } = require('../middleware/httpError')
 
 const traceRules = {
-  title:    { required: true, minLength: 1, maxLength: 200 },
-  category: { maxLength: 50 },
-  priority: { enum: ['none', 'low', 'medium', 'high'] },
+  title:       { required: true, minLength: 1, maxLength: 200 },
+  description: { maxLength: 1000 },
+  lane:        { maxLength: 100 },
+  tags:        {},
+  priority:    { enum: ['none', 'low', 'medium', 'high'] },
 }
 
 router.use(requireAuth)

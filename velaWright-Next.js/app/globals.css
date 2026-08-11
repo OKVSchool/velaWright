@@ -1,3 +1,11 @@
+:root {
+  --accent: #e07820;
+  --font-brand:  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body:   -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-tab:    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-saying: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,7 +13,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background: #0f0f0f;
   color: #e5e5e5;
   min-height: 100vh;
@@ -22,7 +30,7 @@ button {
 
 /* ─── Keyboard focus ─────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid #e07820;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 3px;
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Chevron from './Chevron'
 
@@ -8,7 +7,7 @@ const ORIGIN_CHEVRON = { trace: 'grand', lead: 'ornate', endeavor: 'basic' }
 
 const STATUS_COLORS = {
   active:    '#3b82f6',
-  completed: '#e07820',
+  completed: 'var(--accent)',
   paused:    '#f59e0b',
   deployed:  '#22c55e'
 }
@@ -27,16 +26,6 @@ export default function DeploymentCard({ endeavor }) {
       borderRadius: 10,
       overflow: 'hidden',
     }}>
-      {endeavor.imageUrl && (
-        <div style={{ position: 'relative', width: '100%', height: 160 }}>
-          <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}${endeavor.imageUrl}`}
-            alt={endeavor.title}
-            fill
-            style={{ objectFit: 'cover' }}
-          />
-        </div>
-      )}
       <div style={{ padding: '1.25rem' }}>
 
         {/* Title + status */}
@@ -82,7 +71,7 @@ export default function DeploymentCard({ endeavor }) {
             </span>
           )}
           {endeavor.version && (
-            <span style={{ fontSize: '0.75rem', background: '#e0782022', color: '#e07820', padding: '0.2rem 0.5rem', borderRadius: 4 }}>
+            <span style={{ fontSize: '0.75rem', background: 'color-mix(in srgb, var(--accent) 13%, transparent)', color: 'var(--accent)', padding: '0.2rem 0.5rem', borderRadius: 4 }}>
               {endeavor.version}
             </span>
           )}
@@ -103,7 +92,7 @@ export default function DeploymentCard({ endeavor }) {
           )}
           {endeavor.repoUrl && (
             <a href={endeavor.repoUrl} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: '0.8rem', color: '#e07820', textDecoration: 'none' }}>
+              style={{ fontSize: '0.8rem', color: 'var(--accent)', textDecoration: 'none' }}>
               Repo ↗
             </a>
           )}
@@ -126,7 +115,7 @@ export default function DeploymentCard({ endeavor }) {
         {endeavor.tags?.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
             {endeavor.tags.map(tag => (
-              <span key={tag} style={{ fontSize: '0.7rem', background: '#e0782022', color: '#e07820', padding: '0.15rem 0.4rem', borderRadius: 4 }}>
+              <span key={tag} style={{ fontSize: '0.7rem', background: 'color-mix(in srgb, var(--accent) 13%, transparent)', color: 'var(--accent)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>
                 {tag}
               </span>
             ))}

@@ -26,7 +26,7 @@ const LIVE_TESTS = [
     label: 'Full CRUD lifecycle — endeavor',
     description: 'Creates a test endeavor, reads it back, updates it, then deletes it. All four operations must succeed and clean up after themselves.',
     run: async () => {
-      const created = await api.createEndeavor({ title: '__dev_crud_test__', description: 'Created by Dev tab' })
+      const created = await api.createEndeavor({ title: '__dev_crud_test__', description: 'Created by Dev tab', framework: 'React', repoUrl: 'https://github.com/dev/test' })
       const read    = await api.getEndeavor(created._id)
       const updated = await api.updateEndeavor(created._id, { title: '__dev_crud_test__ — updated' })
       const deleted = await api.deleteEndeavor(created._id)
@@ -212,41 +212,18 @@ const LIVE_TESTS = [
     }
   },
 
-  // ── UPLOADS ────────────────────────────────────────────────────────────────
-  { isSection: true, title: 'Uploads' },
-  {
-    label: 'Oversized file (6 MB, limit is 5 MB)',
-    description: 'Constructs a 6 MB Blob and posts it as an image. Multer should reject it before writing anything to disk.',
-    run: async () => {
-      const bigBlob = new Blob([new Uint8Array(6 * 1024 * 1024)], { type: 'image/jpeg' })
-      const form = new FormData()
-      form.append('image', bigBlob, 'oversized.jpg')
-      const res = await fetch(`${BASE_URL}/endeavors/507f1f77bcf86cd799439011/image`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: form
-      })
-      return { status: res.status, data: await res.json() }
-    }
-  },
-  {
-    label: 'Disallowed file type (.txt uploaded as image)',
-    description: 'Sends a text file with type text/plain. The multer fileFilter checks mimetype against the allowlist [jpeg, png, webp, gif] and should reject it.',
-    run: async () => {
-      const txtBlob = new Blob(['not an image'], { type: 'text/plain' })
-      const form = new FormData()
-      form.append('image', txtBlob, 'exploit.txt')
-      const res = await fetch(`${BASE_URL}/endeavors/507f1f77bcf86cd799439011/image`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: form
-      })
-      return { status: res.status, data: await res.json() }
-    }
-  },
-
   // ── SECURITY ───────────────────────────────────────────────────────────────
   { isSection: true, title: 'Security' },
+  {
+    label: 'Non-admin user accesses admin route',
+    description: 'Sends GET /admin/users with a valid token belonging to a regular user. The admin middleware checks req.user.role === "admin" and returns 403 before the database is touched.',
+    run: async () => {
+      const res = await fetch(`${BASE_URL}/admin/users`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      })
+      return { status: res.status, data: await res.json() }
+    }
+  },
   {
     label: 'NoSQL injection — {"$gt":""} as email on login',
     description: 'Classic MongoDB injection: sends an operator object as the email field hoping to match any user. The isEmail validator converts it to "[object Object]" which fails the regex — stopped before it reaches the database.',
@@ -327,7 +304,7 @@ function LiveTest({ test }) {
             onClick={run}
             disabled={state.phase === 'loading'}
             style={{
-              background: state.phase === 'loading' ? '#2a2a2a' : '#e07820',
+              background: state.phase === 'loading' ? '#2a2a2a' : 'var(--accent)',
               color: '#fff',
               border: 'none',
               padding: '0.4rem 0.9rem',

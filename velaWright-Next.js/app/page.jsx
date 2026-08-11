@@ -35,7 +35,7 @@ export default function DeploymentList() {
         <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>Deployments</h1>
         <button
           onClick={() => router.push('/deployments/new')}
-          style={{ background: '#e07820', color: '#fff', border: 'none', padding: '0.5rem 1.25rem', borderRadius: 6, fontWeight: 600 }}
+          style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '0.5rem 1.25rem', borderRadius: 6, fontWeight: 600, fontFamily: 'var(--font-body)' }}
         >
           + New Deployment
         </button>
@@ -45,7 +45,7 @@ export default function DeploymentList() {
 
       {endeavors.length === 0 ? (
         <p style={{ color: '#888', textAlign: 'center', marginTop: '4rem' }}>
-          Uncharted Waters
+          <span style={{ fontFamily: 'var(--font-saying)' }}>Uncharted Waters</span>
         </p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>

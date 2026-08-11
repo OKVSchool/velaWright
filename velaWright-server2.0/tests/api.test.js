@@ -32,6 +32,10 @@ function makeEndeavor(overrides = {}) {
   return { title: 'Test Endeavor', description: 'A test endeavor', framework: 'React', repoUrl: 'https://github.com/test/repo', ...overrides }
 }
 
+function makeLead(overrides = {}) {
+  return { title: 'Test Lead', framework: 'React', lane: 'Frontend', ...overrides }
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 describe('Auth', () => {
@@ -241,22 +245,22 @@ describe('Leads CRUD', () => {
   })
 
   test('creates a lead and returns 201', async () => {
-    const res = await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send({ title: 'Test Lead' })
+    const res = await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send(makeLead({ title: 'Test Lead' }))
     expect(res.status).toBe(201)
     expect(res.body.title).toBe('Test Lead')
     expect(res.body._id).toBeDefined()
   })
 
   test('lists the authenticated user\'s leads', async () => {
-    await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send({ title: 'Lead One' })
-    await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send({ title: 'Lead Two' })
+    await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send(makeLead({ title: 'Lead One' }))
+    await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send(makeLead({ title: 'Lead Two' }))
     const res = await request(app).get('/leads').set('Authorization', `Bearer ${token}`)
     expect(res.status).toBe(200)
     expect(res.body).toHaveLength(2)
   })
 
   test('updates own lead', async () => {
-    const create = await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send({ title: 'Original Lead' })
+    const create = await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send(makeLead({ title: 'Original Lead' }))
     const id = create.body._id
     const res = await request(app).put(`/leads/${id}`).set('Authorization', `Bearer ${token}`).send({ title: 'Updated Lead' })
     expect(res.status).toBe(200)
@@ -264,7 +268,7 @@ describe('Leads CRUD', () => {
   })
 
   test('deletes own lead', async () => {
-    const create = await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send({ title: 'Delete Me' })
+    const create = await request(app).post('/leads').set('Authorization', `Bearer ${token}`).send(makeLead({ title: 'Delete Me' }))
     const id = create.body._id
     const res = await request(app).delete(`/leads/${id}`).set('Authorization', `Bearer ${token}`)
     expect(res.status).toBe(200)
@@ -404,13 +408,13 @@ describe('Cross-resource ownership enforcement', () => {
   })
 
   test('user B cannot read user A\'s lead', async () => {
-    const { body } = await request(app).post('/leads').set('Authorization', `Bearer ${tokenA}`).send({ title: 'A Lead' })
+    const { body } = await request(app).post('/leads').set('Authorization', `Bearer ${tokenA}`).send(makeLead({ title: 'A Lead' }))
     const res = await request(app).get(`/leads/${body._id}`).set('Authorization', `Bearer ${tokenB}`)
     expect(res.status).toBe(404)
   })
 
   test('user B cannot update user A\'s lead', async () => {
-    const { body } = await request(app).post('/leads').set('Authorization', `Bearer ${tokenA}`).send({ title: 'A Lead' })
+    const { body } = await request(app).post('/leads').set('Authorization', `Bearer ${tokenA}`).send(makeLead({ title: 'A Lead' }))
     const res = await request(app).put(`/leads/${body._id}`).set('Authorization', `Bearer ${tokenB}`).send({ title: 'Hijacked' })
     expect(res.status).toBe(404)
   })
@@ -428,11 +432,11 @@ describe('Cross-resource ownership enforcement', () => {
   })
 
   test('user B list contains only their own leads', async () => {
-    await request(app).post('/leads').set('Authorization', `Bearer ${tokenA}`).send({ title: 'A\'s Lead' })
-    await request(app).post('/leads').set('Authorization', `Bearer ${tokenB}`).send({ title: 'B\'s Lead' })
+    await request(app).post('/leads').set('Authorization', `Bearer ${tokenA}`).send(makeLead({ title: "A's Lead" }))
+    await request(app).post('/leads').set('Authorization', `Bearer ${tokenB}`).send(makeLead({ title: "B's Lead" }))
     const res = await request(app).get('/leads').set('Authorization', `Bearer ${tokenB}`)
     expect(res.body).toHaveLength(1)
-    expect(res.body[0].title).toBe('B\'s Lead')
+    expect(res.body[0].title).toBe("B's Lead")
   })
 })
 

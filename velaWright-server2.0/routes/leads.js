@@ -5,10 +5,12 @@ const validate = require('../middleware/validate')
 const { clientError } = require('../middleware/httpError')
 
 const leadRules = {
-  title:       { required: true, minLength: 1, maxLength: 100 },
-  description: { maxLength: 500 },
-  category:    { maxLength: 50 },
-  status:      { enum: ['active', 'parked', 'promoted'] },
+  title:       { required: true, minLength: 1, maxLength: 200 },
+  description: { maxLength: 1000 },
+  framework:   { required: true, maxLength: 100 },
+  lane:        { required: true, maxLength: 100 },
+  tags:        {},
+  status:      { enum: ['active', 'completed', 'paused', 'promoted'] },
   priority:    { enum: ['none', 'low', 'medium', 'high'] },
 }
 

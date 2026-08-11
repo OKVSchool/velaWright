@@ -60,10 +60,7 @@ export default function Login() {
       </form>
 
       <p style={{ textAlign: 'center', marginTop: '1.25rem', color: '#888', fontSize: '0.875rem' }}>
-        <Link href="/forgot-password" style={{ color: '#e07820' }}>Forgot password?</Link>
-      </p>
-      <p style={{ textAlign: 'center', marginTop: '0.75rem', color: '#888', fontSize: '0.875rem' }}>
-        No account? <Link href="/signup" style={{ color: '#e07820' }}>Sign up</Link>
+        No account? <Link href="/signup" style={{ color: 'var(--accent)' }}>Sign up</Link>
       </p>
     </div>
   )
@@ -77,15 +74,17 @@ const inputStyle = {
   borderRadius: 6,
   fontSize: '1rem',
   outline: 'none',
-  width: '100%'
+  width: '100%',
+  fontFamily: 'var(--font-body)',
 }
 
 const btnStyle = {
-  background: '#e07820',
+  background: 'var(--accent)',
   color: '#fff',
   border: 'none',
   padding: '0.75rem',
   borderRadius: 6,
   fontSize: '1rem',
-  fontWeight: 600
+  fontWeight: 600,
+  fontFamily: 'var(--font-body)',
 }

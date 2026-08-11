@@ -1,7 +1,6 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-const path = require('path')
 
 const authRoutes = require('./routes/auth')
 const endeavorRoutes = require('./routes/endeavors')
@@ -21,7 +20,6 @@ app.use(cors({
   credentials: true
 }))
 app.use(express.json())
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/auth', authRoutes)
 app.use('/endeavors', endeavorRoutes)
 app.use('/leads', leadRoutes)

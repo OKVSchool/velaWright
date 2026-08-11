@@ -1,66 +1,46 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { api } from '@/lib/api'
 
-function AddLeadFormInner() {
+export default function AddTraceForm() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const params = useSearchParams()
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
   }, [user, loading, router])
 
-  const promoteFrom = params.get('promoteFrom')
-  const sourceId    = params.get('sourceId')
-  const isPromotion = !!(promoteFrom && sourceId)
-
   const [form, setForm] = useState({
-    title:       params.get('title')       || '',
-    description: params.get('description') || '',
-    framework:   '',
+    title:       '',
+    description: '',
     lane:        '',
     tags:        '',
-    status:      'active',
   })
-  const [invalid, setInvalid]       = useState({})
+  const [titleError, setTitleError] = useState(false)
   const [error, setError]           = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   function update(field, value) {
     setForm(f => ({ ...f, [field]: value }))
-    if (invalid[field] && value.trim().length > 0)
-      setInvalid(prev => { const next = { ...prev }; delete next[field]; return next })
+    if (field === 'title' && value.trim().length > 0) setTitleError(false)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const errors = {}
-    if (!form.title.trim())       errors.title = true
-    if (!form.description.trim()) errors.description = true
-    if (!form.framework.trim())   errors.framework = true
-    if (!form.lane.trim())        errors.lane = true
-    if (Object.keys(errors).length > 0) { setInvalid(errors); return }
+    if (!form.title.trim()) { setTitleError(true); return }
 
     setError('')
     setSubmitting(true)
     try {
-      const payload = {
+      await api.createTrace({
         title:       form.title,
         description: form.description,
-        framework:   form.framework,
         lane:        form.lane,
         tags:        form.tags.split(',').map(t => t.trim()).filter(Boolean),
-        status:      form.status,
-      }
-      if (isPromotion) {
-        await api.promote({ fromCollection: promoteFrom, fromId: sourceId, toCollection: 'leads', ...payload })
-      } else {
-        await api.createLead(payload)
-      }
+      })
       router.push('/leads')
     } catch (err) {
       setError(err.message)
@@ -71,12 +51,6 @@ function AddLeadFormInner() {
 
   if (loading || !user) return null
 
-  const field = (key) => ({
-    ...inputStyle,
-    border: `1px solid ${invalid[key] ? '#ef4444' : '#2a2a2a'}`,
-    transition: 'border-color 0.2s',
-  })
-
   return (
     <div style={{ maxWidth: 600, margin: '0 auto' }}>
       <button
@@ -85,9 +59,7 @@ function AddLeadFormInner() {
       >
         ← Back
       </button>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>
-        {isPromotion ? 'Promote to Lead' : 'New Lead'}
-      </h1>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>New Trace</h1>
 
       {error && (
         <p style={{ color: '#f87171', background: '#1a1a1a', padding: '0.75rem', borderRadius: 6, marginBottom: '1rem' }}>
@@ -100,29 +72,22 @@ function AddLeadFormInner() {
           value={form.title}
           onChange={e => update('title', e.target.value)}
           placeholder="Title *"
-          aria-label="Lead title"
-          style={field('title')}
+          aria-label="Trace title"
+          style={{ ...inputStyle, border: `1px solid ${titleError ? '#ef4444' : '#2a2a2a'}`, transition: 'border-color 0.2s' }}
         />
         <textarea
           value={form.description}
           onChange={e => update('description', e.target.value)}
-          placeholder="Description *"
-          aria-label="Lead description"
-          style={{ ...field('description'), minHeight: 100, resize: 'vertical' }}
-        />
-        <input
-          value={form.framework}
-          onChange={e => update('framework', e.target.value)}
-          placeholder="Framework *"
-          aria-label="Framework"
-          style={field('framework')}
+          placeholder="Description"
+          aria-label="Trace description"
+          style={{ ...inputStyle, minHeight: 100, resize: 'vertical' }}
         />
         <input
           value={form.lane}
           onChange={e => update('lane', e.target.value)}
-          placeholder="Lane *"
+          placeholder="Lane"
           aria-label="Lane"
-          style={field('lane')}
+          style={inputStyle}
         />
         <input
           value={form.tags}
@@ -131,29 +96,11 @@ function AddLeadFormInner() {
           aria-label="Tags"
           style={inputStyle}
         />
-        <select
-          value={form.status}
-          onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-          aria-label="Status"
-          style={inputStyle}
-        >
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-          <option value="paused">Paused</option>
-        </select>
         <button type="submit" disabled={submitting} style={btnStyle}>
-          {submitting ? 'Saving…' : isPromotion ? 'Promote to Lead' : 'Create Lead'}
+          {submitting ? 'Saving…' : 'Create Trace'}
         </button>
       </form>
     </div>
-  )
-}
-
-export default function AddLeadForm() {
-  return (
-    <Suspense>
-      <AddLeadFormInner />
-    </Suspense>
   )
 }
 

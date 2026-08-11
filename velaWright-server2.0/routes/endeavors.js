@@ -1,24 +1,8 @@
 const router = require('express').Router()
-const multer = require('multer')
-const path = require('path')
 const Endeavor = require('../models/Endeavor')
 const requireAuth = require('../middleware/requireAuth')
 const validate = require('../middleware/validate')
 const { clientError } = require('../middleware/httpError')
-
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-
-const upload = multer({
-  dest: path.join(__dirname, '../uploads'),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
-      cb(null, true)
-    } else {
-      cb(new Error('Only JPEG, PNG, WebP, and GIF images are allowed'))
-    }
-  }
-})
 
 const endeavorRules = {
   title:       { required: true, minLength: 1, maxLength: 100 },
@@ -102,27 +86,6 @@ router.delete('/:id', async (req, res) => {
     const endeavor = await Endeavor.findOneAndDelete({ _id: req.params.id, userId: req.user._id })
     if (!endeavor) return res.status(404).json({ error: 'Endeavor not found' })
     res.json({ message: 'Endeavor deleted' })
-  } catch {
-    res.status(500).json({ error: 'Something went wrong' })
-  }
-})
-
-router.post('/:id/image', (req, res, next) => {
-  upload.single('image')(req, res, err => {
-    if (err) return res.status(400).json({ error: err.message })
-    next()
-  })
-}, async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No image uploaded' })
-    const imageUrl = `/uploads/${req.file.filename}`
-    const endeavor = await Endeavor.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user._id, deletedAt: null },
-      { imageUrl },
-      { new: true }
-    )
-    if (!endeavor) return res.status(404).json({ error: 'Endeavor not found' })
-    res.json(endeavor)
   } catch {
     res.status(500).json({ error: 'Something went wrong' })
   }

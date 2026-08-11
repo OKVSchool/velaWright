@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Chevron from './Chevron'
 
-const ORIGIN_CHEVRON = { lead: 'basic', endeavor: 'ornate', trace: 'grand' }
+const ORIGIN_CHEVRON = { trace: 'grand', lead: 'ornate', endeavor: 'basic' }
 
 const STATUS_COLORS = {
   active:    '#3b82f6',
@@ -43,7 +43,7 @@ export default function DeploymentCard({ endeavor }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
             {endeavor.title}
-            {endeavor.origin && <Chevron type={ORIGIN_CHEVRON[endeavor.origin]} />}
+{endeavor.origin && <Chevron type={ORIGIN_CHEVRON[endeavor.origin]} />}
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{

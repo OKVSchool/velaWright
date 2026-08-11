@@ -6,6 +6,9 @@ import { api } from '@/lib/api'
 import TracePanel from './TracePanel'
 import MarkList from './MarkList'
 import ConfirmModal from './ConfirmModal'
+import Chevron from './Chevron'
+
+const ORIGIN_CHEVRON = { trace: 'basic' }
 
 export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isActive = false }) {
   const router = useRouter()
@@ -115,7 +118,10 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
             style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4 }}
           />
         ) : (
-          <span style={{ flex: 1, fontWeight: 500 }}>{title}</span>
+          <span style={{ flex: 1, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+            {title}
+            {lead.origin && <Chevron type={ORIGIN_CHEVRON[lead.origin]} />}
+          </span>
         )}
         <select
           value={priority}

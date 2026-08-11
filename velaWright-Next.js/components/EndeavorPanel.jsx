@@ -6,6 +6,9 @@ import { api } from '@/lib/api'
 import TracePanel from './TracePanel'
 import MarkList from './MarkList'
 import ConfirmModal from './ConfirmModal'
+import Chevron from './Chevron'
+
+const ORIGIN_CHEVRON = { trace: 'ornate', lead: 'basic', endeavor: 'basic' }
 
 export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTraces, isActive = false }) {
   const router = useRouter()
@@ -15,6 +18,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   const [editingDetails, setEditingDetails] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [title, setTitle] = useState(endeavor.title)
+  const [priority, setPriority] = useState(endeavor.priority || 'none')
   const [addingTrace, setAddingTrace] = useState(false)
   const [newTrace, setNewTrace] = useState('')
   const [saveError, setSaveError] = useState('')
@@ -36,6 +40,17 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
     const scroll = setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
     return () => { clearTimeout(clearHighlight); clearTimeout(scroll) }
   }, [isActive])
+
+  async function savePriority(val) {
+    const prev = priority
+    setPriority(val)
+    try {
+      await api.updateEndeavor(endeavor._id, { priority: val })
+    } catch (err) {
+      setPriority(prev)
+      setSaveError(err.message)
+    }
+  }
 
   async function saveTitle() {
     try {
@@ -106,6 +121,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   }
 
   const statusColors = { active: '#22c55e', paused: '#f59e0b', completed: '#3b82f6', deployed: '#a78bfa' }
+  const priorityColors = { none: '#555', low: '#22c55e', medium: '#f59e0b', high: '#ef4444' }
 
   return (
     <div ref={ref} style={{ background: '#1a1a1a', border: `1px solid ${highlighted ? '#e07820' : '#2a2a2a'}`, borderRadius: 8, transition: 'border-color 0.4s' }}>
@@ -136,7 +152,10 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
             style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4 }}
           />
         ) : (
-          <span style={{ flex: 1, fontWeight: 500 }}>{title}</span>
+          <span style={{ flex: 1, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+            {title}
+            {endeavor.origin && <Chevron type={ORIGIN_CHEVRON[endeavor.origin]} />}
+          </span>
         )}
 
         {endeavor.status && (
@@ -149,6 +168,28 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
             {endeavor.framework}
           </span>
         )}
+
+        <select
+          value={priority}
+          onChange={e => { e.stopPropagation(); savePriority(e.target.value) }}
+          onClick={e => e.stopPropagation()}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            color: priorityColors[priority] || '#555',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            outline: 'none',
+            padding: 0,
+          }}
+        >
+          <option value="none">— priority</option>
+          <option value="low">low</option>
+          <option value="medium">medium</option>
+          <option value="high">high</option>
+        </select>
 
         <button onClick={e => { e.stopPropagation(); setEditingTitle(true); setSaveError('') }} aria-label="Edit title" style={iconBtn}>✏️</button>
         <button onClick={e => { e.stopPropagation(); setConfirming(true) }} aria-label="Delete endeavor" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>

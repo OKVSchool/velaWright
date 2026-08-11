@@ -26,6 +26,7 @@ const endeavorRules = {
   framework:   { required: true, maxLength: 50 },
   repoUrl:     { required: true, isUrl: true },
   status:      { enum: ['active', 'completed', 'paused', 'deployed'] },
+  priority:    { enum: ['none', 'low', 'medium', 'high'] },
   liveUrl:     { isUrl: true },
   demoUrl:     { isUrl: true },
   version:     { maxLength: 30 },

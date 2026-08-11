@@ -11,6 +11,7 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
   const [highlighted, setHighlighted] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [title, setTitle] = useState(trace.title)
+  const [priority, setPriority] = useState(trace.priority || 'none')
   const [saveError, setSaveError] = useState('')
   const ref = useRef(null)
 
@@ -21,6 +22,17 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
     const scroll = setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
     return () => { clearTimeout(clearHighlight); clearTimeout(scroll) }
   }, [isActive])
+
+  async function savePriority(val) {
+    const prev = priority
+    setPriority(val)
+    try {
+      await api.updateTrace(trace._id, { priority: val })
+    } catch (err) {
+      setPriority(prev)
+      setSaveError(err.message)
+    }
+  }
 
   async function saveTitle() {
     try {
@@ -87,6 +99,26 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
           <span style={{ flex: 1, fontSize: '0.9rem', color: '#ddd' }}>{title}</span>
         )}
 
+        <select
+          value={priority}
+          onChange={e => savePriority(e.target.value)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            color: priorityColors[priority] || '#555',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            outline: 'none',
+            padding: 0,
+          }}
+        >
+          <option value="none">— priority</option>
+          <option value="low">low</option>
+          <option value="medium">medium</option>
+          <option value="high">high</option>
+        </select>
         <button onClick={() => { setEditing(true); setSaveError('') }} aria-label="Edit trace" style={iconBtn}>✏️</button>
         <button onClick={() => setConfirming(true)} aria-label="Delete trace" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
         <button onClick={promoteToLead} aria-label="Promote to Lead" style={{ ...iconBtn, fontSize: '0.7rem', color: '#e07820', fontWeight: 600 }}>↑ Lead</button>
@@ -96,4 +128,5 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
   )
 }
 
+const priorityColors = { none: '#555', low: '#22c55e', medium: '#f59e0b', high: '#ef4444' }
 const iconBtn = { background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', padding: '0.1rem 0.2rem' }

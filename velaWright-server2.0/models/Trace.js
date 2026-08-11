@@ -6,6 +6,7 @@ const traceSchema = new mongoose.Schema({
   ideaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lead', default: null },
   projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Endeavor', default: null },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  priority: { type: String, enum: ['none', 'low', 'medium', 'high'], default: 'none' },
   origin: { type: String, enum: ['trace', 'lead', 'endeavor'], default: null },
   deletedAt: { type: Date, default: null }
 }, { timestamps: true })

@@ -15,6 +15,7 @@ const endeavorSchema = new mongoose.Schema({
   tags:          [{ type: String }],
   imageUrl:      { type: String },
   userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  priority:      { type: String, enum: ['none', 'low', 'medium', 'high'], default: 'none' },
   origin:        { type: String, enum: ['trace', 'lead', 'endeavor'], default: null },
   deletedAt:     { type: Date, default: null }
 }, { timestamps: true })

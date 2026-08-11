@@ -51,3 +51,7 @@
 ---
 
 ## Add Marks to embeded Traces
+
+---
+
+## Make Appearance settings last through reload

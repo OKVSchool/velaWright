@@ -8,7 +8,8 @@ import MarkList from './MarkList'
 import ConfirmModal from './ConfirmModal'
 import Chevron from './Chevron'
 
-const ORIGIN_CHEVRON = { trace: 'grand', lead: 'ornate', endeavor: 'basic' }
+const ORIGIN_CHEVRON          = { trace: 'ornate', lead: 'basic',  endeavor: 'basic' }
+const ORIGIN_CHEVRON_DEPLOYED = { trace: 'grand',  lead: 'ornate', endeavor: 'basic' }
 
 export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTraces, isActive = false }) {
   const router = useRouter()
@@ -154,7 +155,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
         ) : (
           <span style={{ flex: 1, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
             {title}
-            {endeavor.origin && <Chevron type={ORIGIN_CHEVRON[endeavor.origin]} />}
+            {endeavor.origin && <Chevron type={(endeavor.status === 'deployed' ? ORIGIN_CHEVRON_DEPLOYED : ORIGIN_CHEVRON)[endeavor.origin]} />}
           </span>
         )}
 

@@ -5,6 +5,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { api } from '@/lib/api'
 import ConfirmModal from '@/components/ConfirmModal'
+import Chevron from '@/components/Chevron'
+
+const ORIGIN_CHEVRON = { trace: 'grand', lead: 'ornate', endeavor: 'basic' }
 
 function isValidUrl(val) {
   return /^https?:\/\/.+/.test(val.trim())
@@ -20,6 +23,7 @@ export default function EditDeploymentForm() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [form, setForm] = useState(null)
+  const [origin, setOrigin] = useState(null)
   const [invalid, setInvalid] = useState({})
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -32,7 +36,9 @@ export default function EditDeploymentForm() {
   useEffect(() => {
     if (!user) return
     api.getEndeavor(id)
-      .then(e => setForm({
+      .then(e => {
+        setOrigin(e.origin || null)
+        setForm({
         title:         e.title || '',
         description:   e.description || '',
         framework:     e.framework || '',
@@ -45,7 +51,8 @@ export default function EditDeploymentForm() {
         collaborators: e.collaborators?.join(', ') || '',
         tags:          e.tags?.join(', ') || '',
         status:        e.status || 'deployed',
-      }))
+      })
+      })
       .catch(err => setError(err.message))
   }, [user, id])
 
@@ -138,7 +145,10 @@ export default function EditDeploymentForm() {
       </button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Edit Deployment</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Edit Deployment</h1>
+          {origin && <Chevron type={ORIGIN_CHEVRON[origin]} small />}
+        </div>
         <button
           onClick={() => setConfirming(true)}
           style={{ background: 'none', border: '1px solid #7f1d1d', color: '#ef4444', padding: '0.4rem 0.9rem', borderRadius: 6, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}

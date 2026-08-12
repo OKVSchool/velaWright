@@ -55,3 +55,7 @@
 ---
 
 ## Make Appearance settings last through reload [x]
+
+---
+
+## Create a way to share Deployments page with prospective employers or other devs

@@ -54,4 +54,4 @@
 
 ---
 
-## Make Appearance settings last through reload
+## Make Appearance settings last through reload [x]

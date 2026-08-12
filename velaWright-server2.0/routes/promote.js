@@ -3,6 +3,7 @@ const Trace = require('../models/Trace')
 const Lead = require('../models/Lead')
 const Endeavor = require('../models/Endeavor')
 const requireAuth = require('../middleware/requireAuth')
+const { clientError } = require('../middleware/httpError')
 
 const MODELS = { traces: Trace, leads: Lead, endeavors: Endeavor }
 const SINGULAR = { traces: 'trace', leads: 'lead', endeavors: 'endeavor' }
@@ -31,7 +32,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(newItem)
   } catch (err) {
-    res.status(400).json({ error: err.message })
+    res.status(400).json({ error: clientError(err) })
   }
 })
 

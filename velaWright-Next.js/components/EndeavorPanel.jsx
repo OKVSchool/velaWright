@@ -8,7 +8,7 @@ import MarkList from './MarkList'
 import ConfirmModal from './ConfirmModal'
 import Chevron from './Chevron'
 
-const ORIGIN_CHEVRON = { trace: 'ornate', lead: 'basic', endeavor: 'basic' }
+const ORIGIN_CHEVRON = { trace: 'grand', lead: 'ornate', endeavor: 'basic' }
 
 export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTraces, isActive = false }) {
   const router = useRouter()

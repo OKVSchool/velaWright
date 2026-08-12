@@ -14,7 +14,7 @@ const STATUS_COLORS = {
 
 function formatDate(dateStr) {
   if (!dateStr) return null
-  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 export default function DeploymentCard({ endeavor }) {

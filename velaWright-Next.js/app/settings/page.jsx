@@ -420,8 +420,8 @@ function AppearanceSection() {
         <h3 style={subhead}>Font Style</h3>
         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
           {[
-            { mode: 'default', label: 'Default', hint: 'Oldenburg · Cinzel · Lora · IM Fell', labelFont: "'Lora', serif" },
-            { mode: 'basic',   label: 'Basic',   hint: 'System font stack',                    labelFont: 'inherit' },
+            { mode: 'default', label: 'Stylish', hint: 'Oldenburg · Cinzel · Lora · IM Fell', labelFont: "'Lora', serif" },
+            { mode: 'basic',   label: 'Default', hint: 'System font stack',                    labelFont: 'inherit' },
           ].map(({ mode, label, hint, labelFont }) => (
             <button
               key={mode}

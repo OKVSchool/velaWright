@@ -18,6 +18,17 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
   const [confirming, setConfirming] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [traceError, setTraceError] = useState('')
+  const [title, setTitle] = useState(lead.title)
+  const [priority, setPriority] = useState(lead.priority || 'none')
+  const [status, setStatus] = useState(lead.status || 'active')
+  const [newTrace, setNewTrace] = useState('')
+  const [addingTrace, setAddingTrace] = useState(false)
+  const [draft, setDraft] = useState({
+    description: lead.description || '',
+    framework:   lead.framework || '',
+    lane:        lead.lane || '',
+    tags:        (lead.tags || []).join(', '),
+  })
   const ref = useRef(null)
 
   useEffect(() => {
@@ -29,22 +40,33 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
     return () => { clearTimeout(clearHighlight); clearTimeout(scroll) }
   }, [isActive])
 
-  const [title, setTitle] = useState(lead.title)
-  const [priority, setPriority] = useState(lead.priority || 'none')
-  const [newTrace, setNewTrace] = useState('')
-  const [addingTrace, setAddingTrace] = useState(false)
-  const [status, setStatus] = useState(lead.status || 'active')
-
-  async function saveTitle() {
+  async function saveAll() {
     try {
-      await api.updateLead(lead._id, { title })
+      await api.updateLead(lead._id, {
+        title,
+        description: draft.description,
+        framework:   draft.framework,
+        lane:        draft.lane,
+        tags:        draft.tags.split(',').map(t => t.trim()).filter(Boolean),
+      })
       setEditing(false)
       setSaveError('')
       onUpdate()
     } catch (err) {
-      setTitle(lead.title)
       setSaveError(err.message)
     }
+  }
+
+  function cancelEdit() {
+    setTitle(lead.title)
+    setDraft({
+      description: lead.description || '',
+      framework:   lead.framework || '',
+      lane:        lead.lane || '',
+      tags:        (lead.tags || []).join(', '),
+    })
+    setEditing(false)
+    setSaveError('')
   }
 
   async function savePriority(val) {
@@ -117,18 +139,18 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
       )}
 
       <div
-        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem', cursor: 'pointer' }}
-        onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem', cursor: editing ? 'default' : 'pointer' }}
+        onClick={() => !editing && setOpen(o => !o)}
       >
         <span style={{ color: '#555', fontSize: '0.75rem' }}>{open ? '▼' : '▶'}</span>
+
         {editing ? (
           <input
             autoFocus
             value={title}
             onChange={e => setTitle(e.target.value)}
             onClick={e => e.stopPropagation()}
-            onBlur={saveTitle}
-            onKeyDown={e => e.key === 'Enter' && saveTitle()}
+            placeholder="Title"
             style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4, fontFamily: 'var(--font-body)' }}
           />
         ) : (
@@ -137,28 +159,19 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
             {lead.origin && <Chevron type={ORIGIN_CHEVRON[lead.origin]} />}
           </span>
         )}
+
         <select
           value={priority}
           onChange={e => { e.stopPropagation(); savePriority(e.target.value) }}
           onClick={e => e.stopPropagation()}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            fontSize: '0.7rem',
-            fontWeight: 600,
-            color: priorityColors[priority] || '#555',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            outline: 'none',
-            padding: 0
-          }}
+          style={{ background: 'transparent', border: 'none', fontSize: '0.7rem', fontWeight: 600, color: priorityColors[priority] || '#555', textTransform: 'uppercase', cursor: 'pointer', outline: 'none', padding: 0 }}
         >
           <option value="none">— priority</option>
           <option value="low">low</option>
           <option value="medium">medium</option>
           <option value="high">high</option>
         </select>
-        <button onClick={e => { e.stopPropagation(); setEditing(true); setSaveError('') }} aria-label="Edit lead" style={iconBtn}>✏️</button>
+        <button onClick={e => { e.stopPropagation(); setEditing(true); setOpen(true); setSaveError('') }} aria-label="Edit lead" style={iconBtn}>✏️</button>
         <button onClick={e => { e.stopPropagation(); setConfirming(true) }} aria-label="Delete lead" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
         <button onClick={e => { e.stopPropagation(); promoteToEndeavor() }} aria-label="Promote to Endeavor" style={{ ...iconBtn, fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>↑ Endeavor</button>
       </div>
@@ -167,26 +180,62 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
         <p style={{ color: '#f87171', fontSize: '0.72rem', margin: 0, padding: '0 1rem 0.5rem' }}>{saveError}</p>
       )}
 
-      {open && (
+      {(open || editing) && (
         <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid #2a2a2a' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center', marginTop: '0.75rem' }}>
-            {lead.framework && <span style={metaChip}>{lead.framework}</span>}
-            {lead.lane && <span style={metaChip}>{lead.lane}</span>}
-            {(lead.tags || []).map(tag => <span key={tag} style={tagChip}>{tag}</span>)}
-            <select
-              value={status}
-              onChange={e => saveStatus(e.target.value)}
-              style={{ background: 'transparent', border: 'none', fontSize: '0.7rem', fontWeight: 600, color: statusColors[status] || '#22c55e', textTransform: 'uppercase', cursor: 'pointer', outline: 'none', padding: 0 }}
-            >
-              <option value="active">active</option>
-              <option value="completed">completed</option>
-              <option value="paused">paused</option>
-              <option value="promoted">promoted</option>
-            </select>
-          </div>
-          {lead.description && (
-            <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0', lineHeight: 1.5 }}>{lead.description}</p>
+          {editing ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
+              <textarea
+                value={draft.description}
+                onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
+                placeholder="Description"
+                style={{ ...fieldInput, minHeight: 72, resize: 'vertical' }}
+              />
+              <input
+                value={draft.framework}
+                onChange={e => setDraft(d => ({ ...d, framework: e.target.value }))}
+                placeholder="Framework"
+                style={fieldInput}
+              />
+              <input
+                value={draft.lane}
+                onChange={e => setDraft(d => ({ ...d, lane: e.target.value }))}
+                placeholder="Lane (e.g. Frontend, Backend)"
+                style={fieldInput}
+              />
+              <input
+                value={draft.tags}
+                onChange={e => setDraft(d => ({ ...d, tags: e.target.value }))}
+                placeholder="Tags (comma-separated)"
+                style={fieldInput}
+              />
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button onClick={saveAll} style={miniBtn}>Save</button>
+                <button onClick={cancelEdit} style={{ ...miniBtn, background: '#2a2a2a' }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center', marginTop: '0.75rem' }}>
+                {lead.framework && <span style={metaChip}>{lead.framework}</span>}
+                {lead.lane && <span style={metaChip}>{lead.lane}</span>}
+                {(lead.tags || []).map(tag => <span key={tag} style={tagChip}>{tag}</span>)}
+                <select
+                  value={status}
+                  onChange={e => saveStatus(e.target.value)}
+                  style={{ background: 'transparent', border: 'none', fontSize: '0.7rem', fontWeight: 600, color: statusColors[status] || '#22c55e', textTransform: 'uppercase', cursor: 'pointer', outline: 'none', padding: 0 }}
+                >
+                  <option value="active">active</option>
+                  <option value="completed">completed</option>
+                  <option value="paused">paused</option>
+                  <option value="promoted">promoted</option>
+                </select>
+              </div>
+              {lead.description && (
+                <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0', lineHeight: 1.5 }}>{lead.description}</p>
+              )}
+            </>
           )}
+
           <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {traces.map(t => <TracePanel key={t._id} trace={t} onDelete={onUpdateTraces} nested />)}
           </div>
@@ -218,3 +267,4 @@ const miniInput = { background: '#0f0f0f', border: '1px solid #333', color: '#e5
 const miniBtn = { background: 'var(--accent)', color: '#fff', border: 'none', padding: '0.4rem 0.7rem', borderRadius: 4, fontSize: '0.85rem', cursor: 'pointer' }
 const metaChip = { fontSize: '0.72rem', color: '#888', background: '#111', border: '1px solid #2a2a2a', borderRadius: 4, padding: '0.15rem 0.5rem' }
 const tagChip = { fontSize: '0.72rem', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 4, padding: '0.15rem 0.5rem' }
+const fieldInput = { background: '#0f0f0f', border: '1px solid #333', color: '#e5e5e5', padding: '0.4rem 0.6rem', borderRadius: 4, fontSize: '0.8rem', width: '100%', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)' }

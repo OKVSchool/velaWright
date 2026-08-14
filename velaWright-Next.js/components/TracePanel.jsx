@@ -113,8 +113,6 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
           ? <span style={{ color: '#555', fontSize: '0.65rem' }}>{open ? '▼' : '▶'}</span>
           : <span style={{ color: '#555', fontSize: '0.65rem', visibility: 'hidden' }}>▶</span>
         }
-        <span style={{ color: '#555', fontSize: '0.75rem' }}>💭</span>
-
         {editing ? (
           <input
             autoFocus

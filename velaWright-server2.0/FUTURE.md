@@ -59,3 +59,11 @@
 ---
 
 ## Create a way to share Deployments page with prospective employers or other devs
+
+---
+
+## Add "Delete Account"
+
+---
+
+## Priority ratings are starts like in original projectHub

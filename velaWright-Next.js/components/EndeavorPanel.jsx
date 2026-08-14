@@ -15,8 +15,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(false)
-  const [editingTitle, setEditingTitle] = useState(false)
-  const [editingDetails, setEditingDetails] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [title, setTitle] = useState(endeavor.title)
   const [priority, setPriority] = useState(endeavor.priority || 'none')
@@ -24,13 +23,13 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   const [newTrace, setNewTrace] = useState('')
   const [saveError, setSaveError] = useState('')
   const [traceError, setTraceError] = useState('')
-  const [details, setDetails] = useState({
+  const [draft, setDraft] = useState({
     description: endeavor.description || '',
-    framework: endeavor.framework || '',
-    lane: endeavor.lane || '',
-    repoUrl: endeavor.repoUrl || '',
-    status: endeavor.status || 'active',
-    tags: endeavor.tags?.join(', ') || '',
+    framework:   endeavor.framework || '',
+    lane:        endeavor.lane || '',
+    repoUrl:     endeavor.repoUrl || '',
+    status:      endeavor.status || 'active',
+    tags:        endeavor.tags?.join(', ') || '',
   })
   const ref = useRef(null)
 
@@ -54,34 +53,37 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
     }
   }
 
-  async function saveTitle() {
+  async function saveAll() {
     try {
-      await api.updateEndeavor(endeavor._id, { title })
-      setEditingTitle(false)
+      await api.updateEndeavor(endeavor._id, {
+        title,
+        description: draft.description,
+        framework:   draft.framework,
+        lane:        draft.lane,
+        repoUrl:     draft.repoUrl,
+        status:      draft.status,
+        tags:        draft.tags.split(',').map(t => t.trim()).filter(Boolean),
+      })
+      setEditing(false)
       setSaveError('')
       onUpdate?.()
     } catch (err) {
-      setTitle(endeavor.title)
       setSaveError(err.message)
     }
   }
 
-  async function saveDetails() {
-    try {
-      await api.updateEndeavor(endeavor._id, {
-        description: details.description,
-        framework: details.framework,
-        lane: details.lane,
-        repoUrl: details.repoUrl,
-        status: details.status,
-        tags: details.tags.split(',').map(t => t.trim()).filter(Boolean),
-      })
-      setEditingDetails(false)
-      setSaveError('')
-      onUpdate?.()
-    } catch (err) {
-      setSaveError(err.message)
-    }
+  function cancelEdit() {
+    setTitle(endeavor.title)
+    setDraft({
+      description: endeavor.description || '',
+      framework:   endeavor.framework || '',
+      lane:        endeavor.lane || '',
+      repoUrl:     endeavor.repoUrl || '',
+      status:      endeavor.status || 'active',
+      tags:        endeavor.tags?.join(', ') || '',
+    })
+    setEditing(false)
+    setSaveError('')
   }
 
   async function deleteEndeavor() {
@@ -139,19 +141,18 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
 
       {/* Header row */}
       <div
-        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem', cursor: 'pointer' }}
-        onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem', cursor: editing ? 'default' : 'pointer' }}
+        onClick={() => !editing && setOpen(o => !o)}
       >
         <span style={{ color: '#555', fontSize: '0.75rem' }}>{open ? '▼' : '▶'}</span>
 
-        {editingTitle ? (
+        {editing ? (
           <input
             autoFocus
             value={title}
             onChange={e => setTitle(e.target.value)}
             onClick={e => e.stopPropagation()}
-            onBlur={saveTitle}
-            onKeyDown={e => e.key === 'Enter' && saveTitle()}
+            placeholder="Title"
             style={{ flex: 1, background: '#0f0f0f', border: '1px solid #444', color: '#e5e5e5', padding: '0.3rem 0.5rem', borderRadius: 4, fontFamily: 'var(--font-body)' }}
           />
         ) : (
@@ -161,12 +162,12 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
           </span>
         )}
 
-        {endeavor.status && (
+        {!editing && endeavor.status && (
           <span style={{ fontSize: '0.7rem', fontWeight: 600, color: statusColors[endeavor.status] || '#555', textTransform: 'uppercase' }}>
             {endeavor.status}
           </span>
         )}
-        {endeavor.framework && (
+        {!editing && endeavor.framework && (
           <span style={{ fontSize: '0.7rem', color: '#666', background: '#2a2a2a', padding: '0.15rem 0.4rem', borderRadius: 4 }}>
             {endeavor.framework}
           </span>
@@ -176,17 +177,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
           value={priority}
           onChange={e => { e.stopPropagation(); savePriority(e.target.value) }}
           onClick={e => e.stopPropagation()}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            fontSize: '0.7rem',
-            fontWeight: 600,
-            color: priorityColors[priority] || '#555',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            outline: 'none',
-            padding: 0,
-          }}
+          style={{ background: 'transparent', border: 'none', fontSize: '0.7rem', fontWeight: 600, color: priorityColors[priority] || '#555', textTransform: 'uppercase', cursor: 'pointer', outline: 'none', padding: 0 }}
         >
           <option value="none">— priority</option>
           <option value="low">low</option>
@@ -194,7 +185,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
           <option value="high">high</option>
         </select>
 
-        <button onClick={e => { e.stopPropagation(); setEditingTitle(true); setSaveError('') }} aria-label="Edit title" style={iconBtn}>✏️</button>
+        <button onClick={e => { e.stopPropagation(); setEditing(true); setOpen(true); setSaveError('') }} aria-label="Edit endeavor" style={iconBtn}>✏️</button>
         <button onClick={e => { e.stopPropagation(); setConfirming(true) }} aria-label="Delete endeavor" style={{ ...iconBtn, color: '#ef4444' }}>🗑</button>
         <button onClick={e => { e.stopPropagation(); promoteToDeployment() }} aria-label="Promote to Deployment" style={{ ...iconBtn, fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>↑ Deploy</button>
       </div>
@@ -204,31 +195,30 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
       )}
 
       {/* Expanded body */}
-      {open && (
+      {(open || editing) && (
         <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid #2a2a2a' }}>
 
-          {/* Details section */}
-          {editingDetails ? (
+          {editing ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1rem' }}>
               <textarea
-                value={details.description}
-                onChange={e => setDetails(d => ({ ...d, description: e.target.value }))}
+                value={draft.description}
+                onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
                 placeholder="Description"
                 style={{ ...fieldInput, minHeight: 72, resize: 'vertical' }}
               />
-              <input value={details.framework} onChange={e => setDetails(d => ({ ...d, framework: e.target.value }))} placeholder="Framework" style={fieldInput} />
-              <input value={details.lane} onChange={e => setDetails(d => ({ ...d, lane: e.target.value }))} placeholder="Lane (e.g. Frontend, Backend)" style={fieldInput} />
-              <input value={details.repoUrl} onChange={e => setDetails(d => ({ ...d, repoUrl: e.target.value }))} placeholder="Repo URL" style={fieldInput} />
-              <input value={details.tags} onChange={e => setDetails(d => ({ ...d, tags: e.target.value }))} placeholder="Tags (comma-separated)" style={fieldInput} />
-              <select value={details.status} onChange={e => setDetails(d => ({ ...d, status: e.target.value }))} style={fieldInput}>
+              <input value={draft.framework} onChange={e => setDraft(d => ({ ...d, framework: e.target.value }))} placeholder="Framework" style={fieldInput} />
+              <input value={draft.lane} onChange={e => setDraft(d => ({ ...d, lane: e.target.value }))} placeholder="Lane (e.g. Frontend, Backend)" style={fieldInput} />
+              <input value={draft.repoUrl} onChange={e => setDraft(d => ({ ...d, repoUrl: e.target.value }))} placeholder="Repo URL" style={fieldInput} />
+              <input value={draft.tags} onChange={e => setDraft(d => ({ ...d, tags: e.target.value }))} placeholder="Tags (comma-separated)" style={fieldInput} />
+              <select value={draft.status} onChange={e => setDraft(d => ({ ...d, status: e.target.value }))} style={fieldInput}>
                 <option value="active">Active</option>
                 <option value="paused">Paused</option>
                 <option value="completed">Completed</option>
                 <option value="deployed">Deployed</option>
               </select>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={saveDetails} style={miniBtn}>Save</button>
-                <button onClick={() => { setEditingDetails(false); setSaveError('') }} style={{ ...miniBtn, background: '#2a2a2a' }}>Cancel</button>
+                <button onClick={saveAll} style={miniBtn}>Save</button>
+                <button onClick={cancelEdit} style={{ ...miniBtn, background: '#2a2a2a' }}>Cancel</button>
               </div>
             </div>
           ) : (
@@ -252,36 +242,37 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
                   ))}
                 </div>
               )}
-              <button onClick={() => setEditingDetails(true)} style={{ ...miniBtn, background: 'none', border: '1px solid #333', color: '#888', fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}>
-                Edit details
-              </button>
             </div>
           )}
 
           {/* Traces */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-            {traces.length === 0
-              ? <p style={{ color: '#555', fontSize: '0.875rem', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
-              : traces.map(t => <TracePanel key={t._id} trace={t} onDelete={onUpdateTraces} nested />)
-            }
-          </div>
-
-          {addingTrace ? (
+          {!editing && (
             <>
-              <form onSubmit={addTrace} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-                <input autoFocus value={newTrace} onChange={e => setNewTrace(e.target.value)} placeholder="New trace…" style={{ flex: 1, ...fieldInput }} />
-                <button type="submit" style={miniBtn}>Add</button>
-                <button type="button" onClick={() => { setAddingTrace(false); setTraceError('') }} style={{ ...miniBtn, background: '#2a2a2a' }}>✕</button>
-              </form>
-              {traceError && <p style={{ color: '#f87171', fontSize: '0.72rem', margin: '0.25rem 0 0' }}>{traceError}</p>}
-            </>
-          ) : (
-            <button onClick={() => setAddingTrace(true)} style={{ ...miniBtn, marginTop: '0.75rem' }}>+ Trace</button>
-          )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {traces.length === 0
+                  ? <p style={{ color: '#555', fontSize: '0.875rem', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
+                  : traces.map(t => <TracePanel key={t._id} trace={t} onDelete={onUpdateTraces} nested />)
+                }
+              </div>
 
-          <div style={{ marginTop: '1.5rem' }}>
-            <MarkList parentId={endeavor._id} parentType="projectId" />
-          </div>
+              {addingTrace ? (
+                <>
+                  <form onSubmit={addTrace} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                    <input autoFocus value={newTrace} onChange={e => setNewTrace(e.target.value)} placeholder="New trace…" style={{ flex: 1, ...fieldInput }} />
+                    <button type="submit" style={miniBtn}>Add</button>
+                    <button type="button" onClick={() => { setAddingTrace(false); setTraceError('') }} style={{ ...miniBtn, background: '#2a2a2a' }}>✕</button>
+                  </form>
+                  {traceError && <p style={{ color: '#f87171', fontSize: '0.72rem', margin: '0.25rem 0 0' }}>{traceError}</p>}
+                </>
+              ) : (
+                <button onClick={() => setAddingTrace(true)} style={{ ...miniBtn, marginTop: '0.75rem' }}>+ Trace</button>
+              )}
+
+              <div style={{ marginTop: '1.5rem' }}>
+                <MarkList parentId={endeavor._id} parentType="projectId" />
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

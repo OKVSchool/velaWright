@@ -84,7 +84,7 @@ export default function LeadPanel({ lead, traces, onUpdate, onUpdateTraces, isAc
   }
 
   function promoteToEndeavor() {
-    const p = new URLSearchParams({ promoteFrom: 'leads', sourceId: lead._id, title: lead.title, description: lead.description || '' })
+    const p = new URLSearchParams({ promoteFrom: 'leads', sourceId: lead._id, title: lead.title, description: lead.description || '', framework: lead.framework || '', lane: lead.lane || '', tags: (lead.tags || []).join(', ') })
     router.push(`/endeavors/new?${p}`)
   }
 

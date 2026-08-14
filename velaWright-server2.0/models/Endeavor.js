@@ -5,6 +5,7 @@ const endeavorSchema = new mongoose.Schema({
   description:   { type: String, default: '' },
   status:        { type: String, enum: ['active', 'completed', 'paused', 'deployed'], default: 'active' },
   framework:     { type: String },
+  lane:          { type: String, default: '' },
   repoUrl:       { type: String },
   liveUrl:       { type: String },
   demoUrl:       { type: String },

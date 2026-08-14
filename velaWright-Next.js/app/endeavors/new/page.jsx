@@ -23,11 +23,12 @@ function AddEndeavorFormInner() {
   const isPromotion = !!(promoteFrom && sourceId)
 
   const [form, setForm] = useState({
-    title:       params.get('title') || '',
+    title:       params.get('title')       || '',
     description: params.get('description') || '',
-    framework:   '',
+    framework:   params.get('framework')   || '',
+    lane:        params.get('lane')        || '',
     repoUrl:     '',
-    tags:        '',
+    tags:        params.get('tags')        || '',
     status:      'active',
   })
   const [invalid, setInvalid] = useState({})
@@ -57,6 +58,7 @@ function AddEndeavorFormInner() {
         title:       form.title,
         description: form.description,
         framework:   form.framework,
+        lane:        form.lane,
         repoUrl:     form.repoUrl,
         tags:        form.tags.split(',').map(t => t.trim()).filter(Boolean),
         status:      form.status,
@@ -104,6 +106,7 @@ function AddEndeavorFormInner() {
         <input value={form.title} onChange={e => update('title', e.target.value)} placeholder="Title *" aria-label="Endeavor title" style={field('title')} />
         <textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Description *" aria-label="Endeavor description" style={{ ...field('description'), minHeight: 100, resize: 'vertical' }} />
         <input value={form.framework} onChange={e => update('framework', e.target.value)} placeholder="Framework *" aria-label="Framework" style={field('framework')} />
+        <input value={form.lane} onChange={e => setForm(f => ({ ...f, lane: e.target.value }))} placeholder="Lane (e.g. Frontend, Backend)" aria-label="Lane" style={inputStyle} />
         <input value={form.repoUrl} onChange={e => update('repoUrl', e.target.value)} placeholder="Repo URL *" aria-label="Repository URL" style={field('repoUrl')} />
         <input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="Tags (comma-separated)" aria-label="Tags" style={inputStyle} />
         <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} aria-label="Endeavor status" style={inputStyle}>

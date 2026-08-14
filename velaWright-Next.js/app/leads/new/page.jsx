@@ -21,9 +21,9 @@ function AddLeadFormInner() {
   const [form, setForm] = useState({
     title:       params.get('title')       || '',
     description: params.get('description') || '',
-    framework:   '',
-    lane:        '',
-    tags:        '',
+    framework:   params.get('framework')   || '',
+    lane:        params.get('lane')        || '',
+    tags:        params.get('tags')        || '',
     status:      'active',
   })
   const [invalid, setInvalid]       = useState({})

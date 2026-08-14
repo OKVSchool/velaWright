@@ -27,6 +27,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
   const [details, setDetails] = useState({
     description: endeavor.description || '',
     framework: endeavor.framework || '',
+    lane: endeavor.lane || '',
     repoUrl: endeavor.repoUrl || '',
     status: endeavor.status || 'active',
     tags: endeavor.tags?.join(', ') || '',
@@ -70,6 +71,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
       await api.updateEndeavor(endeavor._id, {
         description: details.description,
         framework: details.framework,
+        lane: details.lane,
         repoUrl: details.repoUrl,
         status: details.status,
         tags: details.tags.split(',').map(t => t.trim()).filter(Boolean),
@@ -215,6 +217,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
                 style={{ ...fieldInput, minHeight: 72, resize: 'vertical' }}
               />
               <input value={details.framework} onChange={e => setDetails(d => ({ ...d, framework: e.target.value }))} placeholder="Framework" style={fieldInput} />
+              <input value={details.lane} onChange={e => setDetails(d => ({ ...d, lane: e.target.value }))} placeholder="Lane (e.g. Frontend, Backend)" style={fieldInput} />
               <input value={details.repoUrl} onChange={e => setDetails(d => ({ ...d, repoUrl: e.target.value }))} placeholder="Repo URL" style={fieldInput} />
               <input value={details.tags} onChange={e => setDetails(d => ({ ...d, tags: e.target.value }))} placeholder="Tags (comma-separated)" style={fieldInput} />
               <select value={details.status} onChange={e => setDetails(d => ({ ...d, status: e.target.value }))} style={fieldInput}>

@@ -10,6 +10,11 @@ import EndeavorPanel from '@/components/EndeavorPanel'
 
 const TABS = ['traces', 'leads', 'endeavors']
 
+const PRIORITY_RANK = { high: 0, medium: 1, low: 2, none: 3 }
+function byPriority(a, b) {
+  return (PRIORITY_RANK[a.priority] ?? 3) - (PRIORITY_RANK[b.priority] ?? 3)
+}
+
 const TYPE_COLORS = {
   Endeavor: '#3b82f6',
   Lead:     'var(--accent)',
@@ -250,7 +255,7 @@ function highlight(text, query) {
 }
 
 function TracesTab({ traces, refresh, activeId }) {
-  const standalone = traces.filter(t => !t.ideaId && !t.projectId)
+  const standalone = traces.filter(t => !t.ideaId && !t.projectId).slice().sort(byPriority)
   return (
     <div>
       <AddTraceForm />
@@ -264,14 +269,15 @@ function TracesTab({ traces, refresh, activeId }) {
 }
 
 function LeadsTab({ leads, traces, refresh, refreshTraces, activeId }) {
+  const sorted = leads.slice().sort(byPriority)
   return (
     <div>
       <AddLeadForm />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
-        {leads.length === 0 ? (
+        {sorted.length === 0 ? (
           <p style={{ color: '#555', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
-        ) : leads.map(lead => (
-          <LeadPanel key={lead._id} lead={lead} traces={traces.filter(t => t.ideaId === lead._id)} onUpdate={refresh} onUpdateTraces={refreshTraces} isActive={activeId === lead._id} />
+        ) : sorted.map(lead => (
+          <LeadPanel key={lead._id} lead={lead} traces={traces.filter(t => t.ideaId === lead._id).slice().sort(byPriority)} onUpdate={refresh} onUpdateTraces={refreshTraces} isActive={activeId === lead._id} />
         ))}
       </div>
     </div>
@@ -280,16 +286,17 @@ function LeadsTab({ leads, traces, refresh, refreshTraces, activeId }) {
 
 function EndeavorTab({ endeavors, traces, refresh, refreshTraces, activeId }) {
   const router = useRouter()
+  const sorted = endeavors.slice().sort(byPriority)
   return (
     <div>
       <button onClick={() => router.push('/endeavors/new')} style={btnStyle}>
         + New Endeavor
       </button>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
-        {endeavors.length === 0 ? (
+        {sorted.length === 0 ? (
           <p style={{ color: '#555', fontFamily: 'var(--font-saying)' }}>Uncharted Waters</p>
-        ) : endeavors.map(e => (
-          <EndeavorPanel key={e._id} endeavor={e} traces={traces.filter(t => t.projectId === e._id)} onUpdate={refresh} onUpdateTraces={refreshTraces} isActive={activeId === e._id} />
+        ) : sorted.map(e => (
+          <EndeavorPanel key={e._id} endeavor={e} traces={traces.filter(t => t.projectId === e._id).slice().sort(byPriority)} onUpdate={refresh} onUpdateTraces={refreshTraces} isActive={activeId === e._id} />
         ))}
       </div>
     </div>

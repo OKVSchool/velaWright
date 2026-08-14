@@ -35,6 +35,7 @@ export default function TracePanel({ trace, onDelete, nested = false, isActive =
     setPriority(val)
     try {
       await api.updateTrace(trace._id, { priority: val })
+      onDelete()
     } catch (err) {
       setPriority(prev)
       setSaveError(err.message)

@@ -47,6 +47,7 @@ export default function EndeavorPanel({ endeavor, traces, onUpdate, onUpdateTrac
     setPriority(val)
     try {
       await api.updateEndeavor(endeavor._id, { priority: val })
+      onUpdate?.()
     } catch (err) {
       setPriority(prev)
       setSaveError(err.message)
